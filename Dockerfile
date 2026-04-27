@@ -6,5 +6,8 @@ WORKDIR /home/sd
 ADD hibernate.cfg.xml .
 ADD messages.props .
 
+# copy keystore and truststore
+COPY *.ks /tls
+
 # copy the jar created by assembly to the docker image
 COPY target/sd*.jar sd2526.jar
