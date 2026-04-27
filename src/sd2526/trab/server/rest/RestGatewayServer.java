@@ -16,13 +16,13 @@ public class RestGatewayServer {
         System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s\n");
     }
     public static final int PORT = 8085;
-    private static final String SERVER_URI_FMT = "http://%s:%s/rest";
+    private static final String SERVER_URI_FMT = "https://%s:%s/rest";
 
     public static void main(String[] args) {
         try {
             ResourceConfig config = new ResourceConfig();
 
-            String ip = InetAddress.getLocalHost().getHostAddress();
+            String ip = InetAddress.getLocalHost().getHostName();
             String serverURI = String.format(SERVER_URI_FMT, ip, PORT);
             String hostname = InetAddress.getLocalHost().getHostName();
             int dot = hostname.indexOf('.');
@@ -35,7 +35,7 @@ public class RestGatewayServer {
 
             config.register(GatewayMessagesResource.class);
             config.register(GatewayUsersResource.class);
-            JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
+            JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config, javax.net.ssl.SSLContext.getDefault());
 
             Discovery.announce("Gateway", domain, serverURI);
             Log.info(String.format("%s Server ready @ %s\n", "Gateway", serverURI));

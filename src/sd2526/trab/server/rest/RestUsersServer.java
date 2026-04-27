@@ -15,15 +15,15 @@ public class RestUsersServer {
         System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s\n");
     }
     public static final int PORT = 8080;
-    private static final String SERVER_URI_FMT = "http://%s:%s/rest";
+    private static final String SERVER_URI_FMT = "https://%s:%s/rest";
 
     public static void main(String[] args) {
         try {
             ResourceConfig config = new ResourceConfig();
             config.register(RestUsersResource.class);
-            String ip = InetAddress.getLocalHost().getHostAddress();
+            String ip = InetAddress.getLocalHost().getHostName();
             String serverURI = String.format(SERVER_URI_FMT, ip, PORT);
-            JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
+            JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config, javax.net.ssl.SSLContext.getDefault());
             String hostname = InetAddress.getLocalHost().getHostName();
             int dot = hostname.indexOf('.');
             String domain = (dot >= 0 && dot < hostname.length() - 1)
