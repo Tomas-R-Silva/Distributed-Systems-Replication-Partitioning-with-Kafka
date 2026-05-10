@@ -4,8 +4,12 @@ import static sd2526.trab.api.java.Result.error;
 import static sd2526.trab.api.java.Result.ok;
 import static sd2526.trab.api.java.Result.ErrorCode.INTERNAL_ERROR;
 
+import java.io.FileInputStream;
 import java.net.URI;
+import java.security.KeyStore;
 import java.util.function.Supplier;
+
+import javax.net.ssl.TrustManagerFactory;
 
 import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
@@ -14,6 +18,11 @@ import io.grpc.StatusRuntimeException;
 import sd2526.trab.api.java.Result;
 import sd2526.trab.api.java.Result.ErrorCode;
 
+import io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.NettyChannelBuilder;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+
 public class GrpcClient {
 
 	final protected URI serverURI;
@@ -21,8 +30,30 @@ public class GrpcClient {
 	
 	protected GrpcClient(String serverUrl) {
 		this.serverURI = URI.create(serverUrl);
-		this.channel = ManagedChannelBuilder.forAddress(serverURI.getHost(), serverURI.getPort())
-				.usePlaintext().enableRetry().build();
+
+		String trustStoreFilename = System.getProperty("javax.net.ssl.trustStore");
+        String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+        
+        try {
+            KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            try (FileInputStream input = new FileInputStream(trustStoreFilename)) {
+                trustStore.load(input, trustStorePassword.toCharArray());
+            }
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+                TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init(trustStore);
+
+            SslContext context = GrpcSslContexts.configure(
+                SslContextBuilder.forClient().trustManager(trustManagerFactory)
+                ).build();
+            this.channel = NettyChannelBuilder
+                .forAddress(serverURI.getHost(), serverURI.getPort())
+                .sslContext(context)
+                .enableRetry()
+                .build();
+        } catch (Exception e) {
+        	throw new RuntimeException("Failed to initialize SSL context", e);
+        }		
 	}
 	
 	protected <T> Result<T> toJavaResult(Supplier<T> func) {
