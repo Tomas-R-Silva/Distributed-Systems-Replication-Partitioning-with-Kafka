@@ -7,7 +7,7 @@
 	<version>1</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<authors>XXXXX-YYYYY</authors>
+		<authors>68644-69029</authors>
 	</properties>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -161,6 +161,11 @@
 			<groupId>io.netty</groupId>
 			<artifactId>netty-codec-http</artifactId>
 			<version>4.1.131.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.scribejava</groupId>
+			<artifactId>scribejava-apis</artifactId>
+			<version>8.3.3</version>
 		</dependency>
 	</dependencies>
 </project>
