@@ -33,7 +33,7 @@ import sd2526.trab.impl.java.clients.Clients;
 import sd2526.trab.impl.utils.IP;
 import sd2526.trab.impl.utils.Sleep;
 
-public class JavaMessages extends JavaBaseService implements Messages, AdminMessages {
+public class JavaMessagesCopy extends JavaBaseService implements Messages, AdminMessages {
 	
 	private static final int REMOTE_COMM_DEADLINE = 90000;
 	private static final long MESSAGES_CACHE_EXPIRATION = 30000;
@@ -68,7 +68,7 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 			})
 			.build();
 	
-	protected JavaMessages() {
+	private JavaMessages() {
 		this.jobs = new JobDispatcher();
 	}
 
@@ -154,8 +154,7 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 		return Clients.AdminUsersClient.get().checkUsers(addresses);
 	}
 
-	
-	protected void deliverToKnownLocalRecipients(Collection<String> addresses, Message msg) {
+	private void deliverToKnownLocalRecipients(Collection<String> addresses, Message msg) {
 		Log.info( () -> "deliverToKnownLocalRecipients : local known addresses = %s, msg = %s\n".formatted(addresses, msg));
 
 		DB.transaction((hibernate) -> {

@@ -10,7 +10,10 @@ import sd2526.trab.impl.zoho.zoho.ZohoServiceFactory;
 import sd2526.trab.impl.zoho.zoho.ZohoTokenManager;
 import sd2526.trab.impl.zoho.zoho.msgs.ZohoAccount;
 import sd2526.trab.impl.zoho.zoho.msgs.ZohoAccountReply;
+import sd2526.trab.impl.zoho.zoho.msgs.ZohoMessages;
 import sd2526.trab.impl.utils.JSON;
+
+import sd2526.trab.api.Message;
 
 public class Zoho {
 	static final String MAIL_API_BASE = "https://mail.zoho.eu/api";
@@ -20,6 +23,7 @@ public class Zoho {
     static final String REFRESH_TOKEN = "1000.ffa375df0ea43ac47605b044a21a5694.c009985b534ac1beee2c82ffbf5a27cf";
 
 	private static final String ACCOUNTS = "/accounts";
+    private static final String MESSAGES = "/messages";
 
     final OAuth20Service service;
     final ZohoTokenManager tokenManager;
@@ -55,6 +59,31 @@ public class Zoho {
         		return null;
         	}
         }
+    }
+
+    public void postMessage(String address, Message msg) throws Exception {
+        var accessToken = new OAuth2AccessToken( tokenManager.getValidAccessToken() );
+
+        OAuthRequest request = new OAuthRequest(Verb.POST, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + MESSAGES);
+        ZohoMessages zohoMessages = new ZohoMessages(msg.getSender(), address, msg.getSubject(), msg.getContents());
+        request.setPayload(JSON.encode(zohoMessages));
+        request.addHeader("Content-Type", "application/json");
+        service.signRequest(accessToken, request);
+
+        System.out.println(request);
+        System.out.println(zohoMessages);
+        try (Response response = service.execute(request)) {
+        	if( response.isSuccessful() ) {
+        		var body = response.getBody();
+          	    //var data = JSON.decode(body, ZohoAccountReply.class).data();
+        		
+        		
+        	}
+        	else {
+        		System.err.println( response.getCode() + "/" + response.getBody() );
+        	}
+        }
+        
     }
     
     

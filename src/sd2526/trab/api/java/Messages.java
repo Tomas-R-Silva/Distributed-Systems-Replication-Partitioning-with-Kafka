@@ -3,6 +3,7 @@ package sd2526.trab.api.java;
 import java.util.List;
 
 import sd2526.trab.api.Message;
+import java.util.Collection;
 
 public interface Messages {
 	String SERVICE_NAME = "Messages";
