@@ -1,16 +1,15 @@
 package sd2526.trab.impl.zoho;
 
+import java.util.List;
+
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
-import sd2526.trab.impl.zoho.zoho.ZohoServiceFactory;
-import sd2526.trab.impl.zoho.zoho.ZohoTokenManager;
-import sd2526.trab.impl.zoho.zoho.msgs.ZohoAccount;
-import sd2526.trab.impl.zoho.zoho.msgs.ZohoAccountReply;
-import sd2526.trab.impl.zoho.zoho.msgs.ZohoMessages;
+import sd2526.trab.impl.zoho.zoho.*;
+import sd2526.trab.impl.zoho.zoho.msgs.*;
 import sd2526.trab.impl.utils.JSON;
 
 import sd2526.trab.api.Message;
@@ -24,6 +23,7 @@ public class Zoho {
 
 	private static final String ACCOUNTS = "/accounts";
     private static final String MESSAGES = "/messages";
+    private static final String SEARCH = "/search";
 
     final OAuth20Service service;
     final ZohoTokenManager tokenManager;
@@ -64,27 +64,56 @@ public class Zoho {
     public void postMessage(String address, Message msg) throws Exception {
         var accessToken = new OAuth2AccessToken( tokenManager.getValidAccessToken() );
 
+        //Path
         OAuthRequest request = new OAuthRequest(Verb.POST, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + MESSAGES);
-        ZohoMessages zohoMessages = new ZohoMessages(msg.getSender(), address, msg.getSubject(), msg.getContents());
-        request.setPayload(JSON.encode(zohoMessages));
+        //Header
         request.addHeader("Content-Type", "application/json");
+        //Payload 
+        String metadata = msg.getId() + "-" + msg.getSender() + "-" + msg.getCreationTime() + "-" + msg.getSubject() + "-" + msg.getContents() + "-" + msg.getDestination();
+        ZohoMessages zohoMessages = new ZohoMessages(msg.getSender(), address, msg.getSubject(), metadata);
+        request.setPayload(JSON.encode(zohoMessages));
+        //OAuth Header
         service.signRequest(accessToken, request);
 
-        System.out.println(request);
-        System.out.println(zohoMessages);
         try (Response response = service.execute(request)) {
         	if( response.isSuccessful() ) {
-        		var body = response.getBody();
-          	    //var data = JSON.decode(body, ZohoAccountReply.class).data();
-        		
-        		
+        		//var body = response.getBody();
         	}
         	else {
         		System.err.println( response.getCode() + "/" + response.getBody() );
         	}
         }
-        
     }
     
+    public List<ZohoQueryMessages> searchInbox(String query) throws Exception{
+        var accessToken = new OAuth2AccessToken( tokenManager.getValidAccessToken() );
+
+        //Path
+        String formmattedQuery = "subject:" + query + "::or:content:" + query;
+        OAuthRequest request = new OAuthRequest(Verb.GET, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + MESSAGES + SEARCH + "?searchKey=" + formmattedQuery);
+        //Header
+        request.addHeader("Content-Type", "application/json");
+        //Payload
+        //no payload
+        //OAuth Header
+        service.signRequest(accessToken, request);
+
+        System.out.println(request);
+        
+        try (Response response = service.execute(request)) {
+        	if( response.isSuccessful() ) {
+        		var body = response.getBody();
+          	    var data = JSON.decode(body, ZohoQueryReply.class).data();
+                return data;
+                //return null;
+        	}
+        	else {
+        		System.err.println( response.getCode() + "/" + response.getBody() );
+                return null;
+        	}
+        }
+        
+    }
+
     
 }

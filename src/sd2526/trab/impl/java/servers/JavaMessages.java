@@ -168,7 +168,7 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 		
 	}
 		
-	private void reportUnknownLocalRecipients(Collection<String> addresses, Message msg) {
+	protected void reportUnknownLocalRecipients(Collection<String> addresses, Message msg) {
 		Log.info( () -> "reportUnknownLocalRecipients : unknown addresses = %s, msg = %s\n".formatted(addresses, msg));
 
 		var senderDomain = super.getDomain( msg.senderAddress() );

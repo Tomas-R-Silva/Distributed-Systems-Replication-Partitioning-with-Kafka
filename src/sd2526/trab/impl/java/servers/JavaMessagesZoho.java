@@ -10,6 +10,8 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -31,8 +33,10 @@ import sd2526.trab.impl.api.java.AdminMessages;
 import sd2526.trab.impl.db.DB;
 import sd2526.trab.impl.java.clients.Clients;
 import sd2526.trab.impl.utils.IP;
+import sd2526.trab.impl.utils.JSON;
 import sd2526.trab.impl.utils.Sleep;
 import sd2526.trab.impl.zoho.Zoho;
+import sd2526.trab.impl.zoho.zoho.msgs.*;;
 
 public class JavaMessagesZoho extends JavaMessages{
 
@@ -42,6 +46,24 @@ public class JavaMessagesZoho extends JavaMessages{
         super();
     }
 
+    @Override
+    public Result<List<String>> searchInbox(String name, String pwd, String query) {
+		Log.info( () -> "searchInbox : name = %s, pwd = %s, query=%s\n".formatted(name, pwd, query));
+        
+        try{
+            List<ZohoQueryMessages> it = Zoho.getInstance().searchInbox(query);
+            List<String> list = new LinkedList<String>();
+            for (ZohoQueryMessages zMsg : it) {
+                list.add(JSON.decode(zMsg.summary(),Message.class).getId());
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return null;
+	}
+
+    //Done - to review
     @Override
     protected void deliverToKnownLocalRecipients(Collection<String> addresses, Message msg) {
 		Log.info( () -> "deliverToKnownLocalRecipients : local known addresses = %s, msg = %s\n".formatted(addresses, msg));
@@ -54,14 +76,27 @@ public class JavaMessagesZoho extends JavaMessages{
             }
         }
 
-		DB.transaction((hibernate) -> {
-			hibernate.persistOne( msg );
-			for( var address : addresses )
-				hibernate.persistOne( new InboxEntry( msg.getId(), getName(address) ));
-			
-			return ok();
-		});
-		
 	}
+
+    //Done - to review
+    @Override
+    protected void reportUnknownLocalRecipients(Collection<String> addresses, Message msg) {
+		Log.info( () -> "reportUnknownLocalRecipients : unknown addresses = %s, msg = %s\n".formatted(addresses, msg));
+
+		var senderDomain = super.getDomain( msg.senderAddress() );
+		
+		try {
+			for( var recipientAddress : addresses ) {
+				var errorMsg = msg.cloneWithUserNotFound( recipientAddress );
+				if( super.isLocalDomain( senderDomain ) ) {
+
+                    Zoho.getInstance().postMessage(recipientAddress, errorMsg);
+				}
+				else doAsyncRemotePost(senderDomain, errorMsg);
+			}
+		} catch( Exception x ) {
+			x.printStackTrace();			
+		}
+	}	
 
 }

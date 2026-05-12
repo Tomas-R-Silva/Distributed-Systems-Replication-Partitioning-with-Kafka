@@ -1,9 +1,10 @@
 package sd2526.trab.impl.zoho.zoho.msgs;
 
 import java.util.List;
+import java.util.Map;
 
-public record ZohoAccountReply( 
+public record ZohoQueryReply(
     ZohoStatus status, 
-    List<ZohoAccount> data) {
-	
+    List<ZohoQueryMessages> data) {
+
 }
