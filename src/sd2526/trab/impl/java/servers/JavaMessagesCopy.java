@@ -68,7 +68,7 @@ public class JavaMessagesCopy extends JavaBaseService implements Messages, Admin
 			})
 			.build();
 	
-	private JavaMessages() {
+	private JavaMessagesCopy() {
 		this.jobs = new JobDispatcher();
 	}
 

@@ -1,6 +1,7 @@
 package sd2526.trab.impl.java.servers;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.logging.Logger;
 
 import sd2526.trab.impl.utils.IP;
@@ -12,7 +13,7 @@ public abstract class AbstractServer {
 	final protected String serverURI;
 	final protected String service;
 	
-	protected AbstractServer(Logger log, String service, String serverURI) {
+	protected AbstractServer(Logger log, String service, String serverURI) throws UnknownHostException {
 		this.Log = log;
 		this.service = service;
 		this.serverURI = serverURI;

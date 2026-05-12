@@ -11,7 +11,7 @@ public static final int PORT = 14567;
 	
 	private static Logger Log = Logger.getLogger(GrpcMessagesServer.class.getName());
 
-	public GrpcMessagesServer() {
+	public GrpcMessagesServer() throws Exception{
 		super( Log, Messages.SERVICE_NAME, PORT);
 	}
 	
@@ -20,7 +20,7 @@ public static final int PORT = 14567;
 		return List.of( new GrpcMessagesController(), new GrpcAdminMessagesController() );
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception{
 		try {
 			new GrpcMessagesServer().start();
 		} catch (IOException e) {

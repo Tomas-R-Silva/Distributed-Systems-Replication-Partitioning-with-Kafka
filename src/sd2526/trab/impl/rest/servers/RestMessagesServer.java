@@ -11,7 +11,7 @@ public class RestMessagesServer extends AbstractRestServer {
 	
 	private static Logger Log = Logger.getLogger(RestMessagesServer.class.getName());
 
-	RestMessagesServer() {
+	RestMessagesServer() throws Exception{
 		super(Log, Messages.SERVICE_NAME, PORT);
 	}
 
@@ -20,7 +20,7 @@ public class RestMessagesServer extends AbstractRestServer {
 		config.register(RestMessagesResource.class);
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception{
 		new RestMessagesServer().start();
 	}
 }

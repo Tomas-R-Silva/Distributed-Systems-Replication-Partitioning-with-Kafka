@@ -11,7 +11,7 @@ public class RestMessagesProxyServer extends AbstractRestServer{
 	
 	private static Logger Log = Logger.getLogger(RestMessagesProxyServer.class.getName());
 
-	RestMessagesProxyServer() {
+	RestMessagesProxyServer() throws Exception{
 		super(Log, null, PORT); //what is the service name
 	}
 
@@ -20,7 +20,7 @@ public class RestMessagesProxyServer extends AbstractRestServer{
 		config.register(RestMessagesProxyResource.class);
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception{
 		new RestMessagesProxyServer().start();
 	}
 }

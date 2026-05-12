@@ -28,7 +28,7 @@ public abstract class AbstractGrpcServer extends AbstractServer {
 
 	protected final Server server;
 
-	protected AbstractGrpcServer(Logger log, String service, int port) {
+	protected AbstractGrpcServer(Logger log, String service, int port) throws Exception{
 		super(log, service, String.format(SERVER_BASE_URI, IP.hostname(), port, GRPC_CTX));
 
 		SslContext context = null;
