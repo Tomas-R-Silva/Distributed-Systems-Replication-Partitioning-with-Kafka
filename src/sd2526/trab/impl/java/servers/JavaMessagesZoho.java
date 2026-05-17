@@ -51,11 +51,8 @@ public class JavaMessagesZoho extends JavaMessages{
 		Log.info( () -> "searchInbox : name = %s, pwd = %s, query=%s\n".formatted(name, pwd, query));
         
         try{
-            List<ZohoQueryMessages> it = Zoho.getInstance().searchInbox(query);
-            List<String> list = new LinkedList<String>();
-            for (ZohoQueryMessages zMsg : it) {
-                list.add(JSON.decode(zMsg.summary(),Message.class).getId());
-            }
+            return Result.ok(Zoho.getInstance().searchInbox(query));
+            
         }catch(Exception e){
             e.printStackTrace();
         }
