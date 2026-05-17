@@ -22,16 +22,11 @@ public class ZohoGetAccount {
         }
 
         //Teste do PostMessage()
-        //Message msg = new Message("706", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain");
+        //Message msg = new Message("705", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain 706");
         //Zoho.getInstance().postMessage(account.mailboxAddress(), msg);
 
         //Teste do SearchInbox()
-        List<ZohoQueryMessages> it = Zoho.getInstance().searchInbox("706");
-        List<String> list = new LinkedList<String>();
-        for (ZohoQueryMessages zMsg : it) {
-            list.add(zMsg.summary().split("-")[0]);
-        }
-        System.out.println(list);
+        System.out.println(Zoho.getInstance().searchInbox("706"));
         
     }
 }

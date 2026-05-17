@@ -1,5 +1,6 @@
 package sd2526.trab.impl.zoho;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import com.github.scribejava.core.model.OAuth2AccessToken;
@@ -85,7 +86,7 @@ public class Zoho {
         }
     }
     
-    public List<ZohoQueryMessages> searchInbox(String query) throws Exception{
+    private List<ZohoQueryMessages> searchZoho(String query) throws Exception{
         var accessToken = new OAuth2AccessToken( tokenManager.getValidAccessToken() );
 
         //Path
@@ -113,6 +114,18 @@ public class Zoho {
         	}
         }
         
+    }
+
+    public List<String> searchInbox(String query) throws Exception{
+        List<ZohoQueryMessages> it = this.searchZoho(query);
+        List<String> list = new LinkedList<String>();
+        for (ZohoQueryMessages zMsg : it) {
+            String[] msg = zMsg.summary().split("-");
+            if(!list.contains(msg[0]) && (msg[3].contains(query) || msg[4].contains(query))){
+                list.add(msg[0]);
+            }
+        }
+        return list;
     }
 
     
