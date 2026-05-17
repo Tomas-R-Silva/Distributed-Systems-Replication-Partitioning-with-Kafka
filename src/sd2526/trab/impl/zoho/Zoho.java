@@ -25,6 +25,7 @@ public class Zoho {
 	private static final String ACCOUNTS = "/accounts";
     private static final String MESSAGES = "/messages";
     private static final String SEARCH = "/search";
+    private static final String FOLDERS = "/folders";
 
     final OAuth20Service service;
     final ZohoTokenManager tokenManager;
@@ -90,7 +91,7 @@ public class Zoho {
         var accessToken = new OAuth2AccessToken( tokenManager.getValidAccessToken() );
 
         //Path
-        String formmattedQuery = "subject:" + query + "::or:content:" + query;
+        String formmattedQuery = "content:" + query;
         OAuthRequest request = new OAuthRequest(Verb.GET, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + MESSAGES + SEARCH + "?searchKey=" + formmattedQuery);
         //Header
         request.addHeader("Content-Type", "application/json");
@@ -116,6 +117,19 @@ public class Zoho {
         
     }
 
+    private List<ZohoQueryMessages> getMessageZohoInfo(String mid) throws Exception{
+        List<ZohoQueryMessages> list = new LinkedList<>();
+        List<ZohoQueryMessages> it = this.searchZoho(mid);
+        for (ZohoQueryMessages zMsg : it) {
+            String[] msg = zMsg.summary().split("-");
+            if(msg[0].equals(mid)){
+                ZohoQueryMessages folderIdAndMsgId = new ZohoQueryMessages("", zMsg.folderId(), zMsg.messageId(), "","","","");
+                list.add(folderIdAndMsgId);
+            }
+        }
+        return list;
+    }
+
     public List<String> searchInbox(String query) throws Exception{
         List<ZohoQueryMessages> it = this.searchZoho(query);
         List<String> list = new LinkedList<String>();
@@ -126,6 +140,36 @@ public class Zoho {
             }
         }
         return list;
+    }
+
+    public void RemoveMessage(String mid) throws Exception{
+        List<ZohoQueryMessages> msgZohoinfo = getMessageZohoInfo(mid);
+
+        for (ZohoQueryMessages zohoQueryMessages : msgZohoinfo) {
+            String folderID = zohoQueryMessages.folderId();
+            String msgID = zohoQueryMessages.messageId();
+
+            var accessToken = new OAuth2AccessToken( tokenManager.getValidAccessToken() );
+
+            //Path
+            OAuthRequest request = new OAuthRequest(Verb.DELETE, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + FOLDERS + "/" + folderID + MESSAGES + "/" + msgID);
+            //Header
+            request.addHeader("Content-Type", "application/json");
+            //Payload
+            //no payload
+            //OAuth Header
+            service.signRequest(accessToken, request);
+
+            try (Response response = service.execute(request)) {
+                if( response.isSuccessful() ) {
+                    //var body = response.getBody();
+                }
+                else {
+                    System.err.println( response.getCode() + "/" + response.getBody() );
+                }
+            }   
+        }
+
     }
 
     

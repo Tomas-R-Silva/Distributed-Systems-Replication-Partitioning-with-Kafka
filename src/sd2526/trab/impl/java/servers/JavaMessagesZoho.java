@@ -46,6 +46,7 @@ public class JavaMessagesZoho extends JavaMessages{
         super();
     }
 
+    //Done - to review
     @Override
     public Result<List<String>> searchInbox(String name, String pwd, String query) {
 		Log.info( () -> "searchInbox : name = %s, pwd = %s, query=%s\n".formatted(name, pwd, query));
@@ -58,6 +59,17 @@ public class JavaMessagesZoho extends JavaMessages{
         }
 
         return null;
+	}
+
+    @Override
+	public Result<Void> removeInboxMessage(String name, String mid, String pwd) {
+		Log.info( () -> "removeInboxMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
+		
+		return getUser(name, pwd )
+				.then( () -> DB.deleteOne( new InboxEntry(mid, name) ) ).mapToVoid()
+				.then( () -> {
+					gcDeletedMessageCache.put( mid, mid );
+				});
 	}
 
     //Done - to review
