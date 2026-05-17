@@ -65,11 +65,16 @@ public class JavaMessagesZoho extends JavaMessages{
 	public Result<Void> removeInboxMessage(String name, String mid, String pwd) {
 		Log.info( () -> "removeInboxMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
 		
-		return getUser(name, pwd )
-				.then( () -> DB.deleteOne( new InboxEntry(mid, name) ) ).mapToVoid()
-				.then( () -> {
-					gcDeletedMessageCache.put( mid, mid );
-				});
+        try{
+            Zoho.getInstance().RemoveMessage(mid);
+            return Result.ok();
+            
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return null;
+		
 	}
 
     //Done - to review
