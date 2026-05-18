@@ -146,6 +146,36 @@ public class Zoho {
         }
     }
 
+    public void removeMessage(String mid) throws Exception{
+        List<ZohoQueryMessages> msgZohoinfo = getZohoMessage(mid);
+
+        for (ZohoQueryMessages zohoQueryMessages : msgZohoinfo) {
+            String folderID = zohoQueryMessages.folderId();
+            String msgID = zohoQueryMessages.messageId();
+
+            var accessToken = new OAuth2AccessToken( tokenManager.getValidAccessToken() );
+
+            //Path
+            OAuthRequest request = new OAuthRequest(Verb.DELETE, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + FOLDERS + "/" + folderID + MESSAGES + "/" + msgID + "?expunge=true");
+            //Header
+            request.addHeader("Content-Type", "application/json");
+            //Payload
+            //no payload
+            //OAuth Header
+            service.signRequest(accessToken, request);
+
+            try (Response response = service.execute(request)) {
+                if( response.isSuccessful() ) {
+                    //var body = response.getBody();
+                }
+                else {
+                    System.err.println( response.getCode() + "/" + response.getBody() );
+                }
+            }   
+        }
+
+    }
+
     public List<ZohoQueryMessages> getZohoMessage(String mid) throws Exception{
         List<ZohoQueryMessages> list = new LinkedList<>();
         List<ZohoQueryMessages> it = this.searchZoho(mid);
@@ -181,36 +211,6 @@ public class Zoho {
             }
         }
         return list;
-    }
-
-    public void removeMessage(String mid) throws Exception{
-        List<ZohoQueryMessages> msgZohoinfo = getZohoMessage(mid);
-
-        for (ZohoQueryMessages zohoQueryMessages : msgZohoinfo) {
-            String folderID = zohoQueryMessages.folderId();
-            String msgID = zohoQueryMessages.messageId();
-
-            var accessToken = new OAuth2AccessToken( tokenManager.getValidAccessToken() );
-
-            //Path
-            OAuthRequest request = new OAuthRequest(Verb.DELETE, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + FOLDERS + "/" + folderID + MESSAGES + "/" + msgID + "?expunge=true");
-            //Header
-            request.addHeader("Content-Type", "application/json");
-            //Payload
-            //no payload
-            //OAuth Header
-            service.signRequest(accessToken, request);
-
-            try (Response response = service.execute(request)) {
-                if( response.isSuccessful() ) {
-                    //var body = response.getBody();
-                }
-                else {
-                    System.err.println( response.getCode() + "/" + response.getBody() );
-                }
-            }   
-        }
-
     }
 
 

@@ -53,31 +53,36 @@ public class JavaMessagesZoho extends JavaMessages{
 		
 		if( badParams( name, mid, pwd ) )
 			return error(BAD_REQUEST);
-		try{
-           String zMsg = Zoho.getInstance().getZohoMessage(mid).get(0).summary();
-           String[] splited = zMsg.split("-");
-           Message msg = new Message(splited[0],splited[1],Set.of(splited[5]),splited[3],splited[4]);
-           msg.setCreationTime(Long.parseLong(splited[2]));
 
-           return Result.ok(msg);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+        return getUser(name, pwd).then(() -> {
+            try{
+            String zMsg = Zoho.getInstance().getZohoMessage(mid).get(0).summary();
+            String[] splited = zMsg.split("-");
+            Message msg = new Message(splited[0],splited[1],Set.of(splited[5]),splited[3],splited[4]);
+            msg.setCreationTime(Long.parseLong(splited[2]));
 
-		return null;		
+            return Result.ok(msg);
+            }catch(Exception e){
+                e.printStackTrace();
+                return error(INTERNAL_ERROR);
+            }
+        });	
 	}
 
     //Done - to review
     @Override
     public Result<List<String>> getAllInboxMessages(String name, String pwd) {
-		try{
-            return Result.ok(Zoho.getInstance().getAllZohoMessages());
-            
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+        return getUser(name, pwd).then( () -> {
+            try{
+                return Result.ok(Zoho.getInstance().getAllZohoMessages());
+                
+            }catch(Exception e){
+                e.printStackTrace();
+                return error(INTERNAL_ERROR);
+            }
+        });	
+        
 
-        return null;
 	}
 
     //Done - to review
@@ -85,30 +90,30 @@ public class JavaMessagesZoho extends JavaMessages{
     public Result<List<String>> searchInbox(String name, String pwd, String query) {
 		Log.info( () -> "searchInbox : name = %s, pwd = %s, query=%s\n".formatted(name, pwd, query));
         
-        try{
-            return Result.ok(Zoho.getInstance().searchInbox(query));
-            
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
-        return null;
+        return getUser(name, pwd).then( () -> {
+            try{
+                return Result.ok(Zoho.getInstance().searchInbox(query));
+            }catch(Exception e){
+                e.printStackTrace();
+                return error(INTERNAL_ERROR);
+            }
+        });	
 	}
 
     @Override
 	public Result<Void> removeInboxMessage(String name, String mid, String pwd) {
 		Log.info( () -> "removeInboxMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
 		
-        try{
-            Zoho.getInstance().removeMessage(mid);
-            return Result.ok();
-            
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
-        return null;
-		
+        return getUser(name, pwd).then( () -> {
+            try{
+                Zoho.getInstance().removeMessage(mid);
+                return Result.ok();
+                
+            }catch(Exception e){
+                e.printStackTrace();
+                return error(INTERNAL_ERROR);
+            }
+        });	
 	}
 
     //Done - to review
@@ -137,7 +142,6 @@ public class JavaMessagesZoho extends JavaMessages{
 			for( var recipientAddress : addresses ) {
 				var errorMsg = msg.cloneWithUserNotFound( recipientAddress );
 				if( super.isLocalDomain( senderDomain ) ) {
-
                     Zoho.getInstance().postMessage(recipientAddress, errorMsg);
 				}
 				else doAsyncRemotePost(senderDomain, errorMsg);
@@ -157,9 +161,9 @@ public class JavaMessagesZoho extends JavaMessages{
             return Result.ok();
         }catch(Exception e){
             e.printStackTrace();
+            return error(INTERNAL_ERROR);
         }
 
-        return null;
 	}
 
     //apagar uma inbox qnd o user é eliminado
@@ -172,9 +176,9 @@ public class JavaMessagesZoho extends JavaMessages{
             return Result.ok();
         }catch(Exception e){
             e.printStackTrace();
+            return error(INTERNAL_ERROR);
         }
 
-        return null;
 			
 	}	
 
