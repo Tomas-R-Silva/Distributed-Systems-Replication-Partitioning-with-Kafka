@@ -35,13 +35,16 @@ public class ZohoGetAccount {
         //System.out.println(msg);
 
         //Teste do GetAllInboxMessages()
-        System.out.println(Zoho.getInstance().getAllZohoMessages());
+        //System.out.println(Zoho.getInstance().getAllZohoMessages());
 
         //Teste do SearchInbox()
         //System.out.println(Zoho.getInstance().searchInbox("706"));
 
         //Teste do RemoveMessage()
         //Zoho.getInstance().RemoveMessage("705");
+
+        //Teste do DeleteUserInbox()
+        Zoho.getInstance().deleteUserInbox(account.mailboxAddress());
         
     }
 }

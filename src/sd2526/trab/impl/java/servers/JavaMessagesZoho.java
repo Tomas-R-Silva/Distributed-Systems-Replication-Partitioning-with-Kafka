@@ -100,7 +100,7 @@ public class JavaMessagesZoho extends JavaMessages{
 		Log.info( () -> "removeInboxMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
 		
         try{
-            Zoho.getInstance().RemoveMessage(mid);
+            Zoho.getInstance().removeMessage(mid);
             return Result.ok();
             
         }catch(Exception e){
@@ -146,6 +146,36 @@ public class JavaMessagesZoho extends JavaMessages{
 			x.printStackTrace();			
 		}
 	}
-    
+
+    @Override
+    protected Result<Void> deleteFromLocalInbox(String mid) {
+		Log.info( () -> "deleteFromLocalInbox : mid = %s\n".formatted(mid));
+
+        try{
+            //delete da msg em si
+            Zoho.getInstance().removeMessage(mid);
+            return Result.ok();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return null;
+	}
+
+    //apagar uma inbox qnd o user é eliminado
+    @Override
+    public Result<Void> remoteDeleteUserInbox(String name) {
+		Log.info( () -> "remoteDeleteUserInbox : name = %s\n".formatted(name));
+
+         try{
+            Zoho.getInstance().deleteUserInbox(name);
+            return Result.ok();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return null;
+			
+	}	
 
 }

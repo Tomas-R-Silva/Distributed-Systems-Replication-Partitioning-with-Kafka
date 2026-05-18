@@ -183,7 +183,7 @@ public class Zoho {
         return list;
     }
 
-    public void RemoveMessage(String mid) throws Exception{
+    public void removeMessage(String mid) throws Exception{
         List<ZohoQueryMessages> msgZohoinfo = getZohoMessage(mid);
 
         for (ZohoQueryMessages zohoQueryMessages : msgZohoinfo) {
@@ -211,6 +211,22 @@ public class Zoho {
             }   
         }
 
+    }
+
+    public void deleteUserInbox(String name)throws Exception{
+        List<ZohoQueryMessages> it = this.searchZoho(name);
+        List<String> list = new LinkedList<String>();
+        for (ZohoQueryMessages zMsg : it) {
+            String[] msg = zMsg.summary().split("-");
+            if(!list.contains(msg[0]) && msg[5].contains(name)){
+                list.add(msg[0]);
+            }
+        }
+
+        for (String midToDelete : list) {
+            this.removeMessage(midToDelete);
+        }
+    
     }
 
     
