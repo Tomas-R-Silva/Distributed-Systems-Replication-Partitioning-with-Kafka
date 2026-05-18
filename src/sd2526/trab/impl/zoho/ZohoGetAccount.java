@@ -22,16 +22,29 @@ public class ZohoGetAccount {
         }
 
         //Teste do PostMessage()
-        //Message msg = new Message("706", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain");
-        //Zoho.getInstance().postMessage(account.mailboxAddress(), msg);
+        //Message msg1 = new Message("706", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain");
+        //Zoho.getInstance().postMessage(account.mailboxAddress(), msg1);
+        //Message msg2 = new Message("705", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain 706");
+        //Zoho.getInstance().postMessage(account.mailboxAddress(), msg2);
+
+        //Teste do GetInboxMessage()
+        //String zMsg = Zoho.getInstance().getZohoMessage("705").get(0).summary();
+        //String[] splited = zMsg.split("-");
+        //Message msg = new Message(splited[0],splited[1],Set.of(splited[5]),splited[3],splited[4]);
+        //msg.setCreationTime(Long.parseLong(splited[2]));
+        //System.out.println(msg);
+
+        //Teste do GetAllInboxMessages()
+        //System.out.println(Zoho.getInstance().getAllZohoMessages());
 
         //Teste do SearchInbox()
-        List<ZohoQueryMessages> it = Zoho.getInstance().searchInbox("706");
-        List<String> list = new LinkedList<String>();
-        for (ZohoQueryMessages zMsg : it) {
-            list.add(zMsg.summary().split("-")[0]);
-        }
-        System.out.println(list);
+        //System.out.println(Zoho.getInstance().searchInbox("706"));
+
+        //Teste do RemoveMessage()
+        //Zoho.getInstance().RemoveMessage("705");
+
+        //Teste do DeleteUserInbox()
+        Zoho.getInstance().deleteUserInbox(account.mailboxAddress());
         
     }
 }

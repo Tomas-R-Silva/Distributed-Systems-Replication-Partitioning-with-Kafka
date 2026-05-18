@@ -221,7 +221,7 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 		return postToLocalInboxes(localAddresses, msg);
 	}
 
-	private Result<Void> deleteFromLocalInbox(String mid) {
+	protected Result<Void> deleteFromLocalInbox(String mid) {
 		Log.info( () -> "deleteFromLocalInbox : mid = %s\n".formatted(mid));
 		
 		var sql = "SELECT * FROM InboxEntry e WHERE e.mid = '%s'".formatted(mid); 
