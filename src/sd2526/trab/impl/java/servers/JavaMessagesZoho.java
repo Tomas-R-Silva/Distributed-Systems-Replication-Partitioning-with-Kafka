@@ -69,6 +69,19 @@ public class JavaMessagesZoho extends JavaMessages{
 
     //Done - to review
     @Override
+    public Result<List<String>> getAllInboxMessages(String name, String pwd) {
+		try{
+            return Result.ok(Zoho.getInstance().getAllZohoMessages());
+            
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return null;
+	}
+
+    //Done - to review
+    @Override
     public Result<List<String>> searchInbox(String name, String pwd, String query) {
 		Log.info( () -> "searchInbox : name = %s, pwd = %s, query=%s\n".formatted(name, pwd, query));
         
@@ -132,6 +145,7 @@ public class JavaMessagesZoho extends JavaMessages{
 		} catch( Exception x ) {
 			x.printStackTrace();			
 		}
-	}	
+	}
+    
 
 }

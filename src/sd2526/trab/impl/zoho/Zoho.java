@@ -26,6 +26,7 @@ public class Zoho {
     private static final String MESSAGES = "/messages";
     private static final String SEARCH = "/search";
     private static final String FOLDERS = "/folders";
+    private static final String VIEW = "/view";
 
     final OAuth20Service service;
     final ZohoTokenManager tokenManager;
@@ -117,6 +118,34 @@ public class Zoho {
         
     }
 
+    private List<ZohoQueryMessages> getEmailInFolder() throws Exception{
+        var accessToken = new OAuth2AccessToken( tokenManager.getValidAccessToken() );
+
+        //Path
+        OAuthRequest request = new OAuthRequest(Verb.GET, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + MESSAGES + VIEW);
+        //Header
+        request.addHeader("Content-Type", "application/json");
+        //Payload
+        //no payload
+        //OAuth Header
+        service.signRequest(accessToken, request);
+
+        System.out.println(request);
+        
+        try (Response response = service.execute(request)) {
+        	if( response.isSuccessful() ) {
+        		var body = response.getBody();
+          	    var data = JSON.decode(body, ZohoQueryReply.class).data();
+                return data;
+                //return null;
+        	}
+        	else {
+        		System.err.println( response.getCode() + "/" + response.getBody() );
+                return null;
+        	}
+        }
+    }
+
     public List<ZohoQueryMessages> getZohoMessage(String mid) throws Exception{
         List<ZohoQueryMessages> list = new LinkedList<>();
         List<ZohoQueryMessages> it = this.searchZoho(mid);
@@ -125,6 +154,18 @@ public class Zoho {
             if(msg[0].equals(mid)){
                 ZohoQueryMessages folderIdAndMsgId = new ZohoQueryMessages(zMsg.fromAddress(), zMsg.folderId(), zMsg.messageId(), zMsg.sender(),zMsg.subject(),zMsg.summary(),zMsg.sentDateInGMT());
                 list.add(folderIdAndMsgId);
+            }
+        }
+        return list;
+    }
+
+    public List<String> getAllZohoMessages() throws Exception{
+        List<ZohoQueryMessages> it = this.getEmailInFolder();
+        List<String> list = new LinkedList<String>();
+        for (ZohoQueryMessages zMsg : it) {
+            String[] msg = zMsg.summary().split("-");
+            if(!list.contains(msg[0])){
+                list.add(msg[0]);
             }
         }
         return list;

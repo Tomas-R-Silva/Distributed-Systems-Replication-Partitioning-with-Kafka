@@ -34,6 +34,9 @@ public class ZohoGetAccount {
         //msg.setCreationTime(Long.parseLong(splited[2]));
         //System.out.println(msg);
 
+        //Teste do GetAllInboxMessages()
+        System.out.println(Zoho.getInstance().getAllZohoMessages());
+
         //Teste do SearchInbox()
         //System.out.println(Zoho.getInstance().searchInbox("706"));
 
