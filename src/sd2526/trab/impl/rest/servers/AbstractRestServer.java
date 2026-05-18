@@ -38,7 +38,7 @@ public abstract class AbstractRestServer extends AbstractServer {
 	protected void start() {
 		
 		try{
-			ResourceConfig config = new ResourceConfig();
+			ResourceConfig config = new ResourceConfig();	
 			registerResources( config );
 			var uri = URI.create("https://0.0.0.0:%s/rest".formatted(port));
 			System.out.println(uri);			
