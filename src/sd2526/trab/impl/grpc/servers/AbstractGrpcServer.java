@@ -25,38 +25,11 @@ public abstract class AbstractGrpcServer extends AbstractServer {
 	private static final String SERVER_BASE_URI = "grpc://%s:%s%s";
 
 	private static final String GRPC_CTX = "/grpc";
-
-	protected final Server server;
+	final int port;
 
 	protected AbstractGrpcServer(Logger log, String service, int port) throws Exception{
 		super(log, service, String.format(SERVER_BASE_URI, IP.hostname(), port, GRPC_CTX));
-
-		SslContext context = null;
-		
-		try{
-			String keyStoreFilename = System.getProperty("javax.net.ssl.keyStore");
-			String keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
-			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-			try(FileInputStream input = new FileInputStream(keyStoreFilename)) {
-				keystore.load(input, keyStorePassword.toCharArray());
-			}
-			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(
-				KeyManagerFactory.getDefaultAlgorithm());
-			keyManagerFactory.init(keystore, keyStorePassword.toCharArray());
-
-			context = GrpcSslContexts.configure(
-				SslContextBuilder.forServer(keyManagerFactory)
-				).build();
-			
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-
-		var builder = NettyServerBuilder.forPort(port);
-		for( var stub : controllers( super.serverURI ) )
-			builder.addService( stub );
-			
-		this.server = builder.sslContext(context).build();
+		this.port = port;
 	}
 
 	protected abstract List<GrpcController> controllers( String uri );
@@ -77,16 +50,25 @@ public abstract class AbstractGrpcServer extends AbstractServer {
 				SslContextBuilder.forServer(keyManagerFactory)
 				).build();
 
-			Discovery.getInstance().announce(serviceName(), super.serverURI);
-			
-			Log.info(String.format("%s gRPC Server ready @ %s\n", service, serverURI));
+			var builder = NettyServerBuilder.forPort(port);
+			for( var stub : controllers( super.serverURI ) )
+				builder.addService( stub );
+				
+			Server server = builder.sslContext(context).build();
+            server.start(); // non-blocking
 
-			server.start();
-			Runtime.getRuntime().addShutdownHook(new Thread( () -> {
-				System.err.println("*** shutting down gRPC server since JVM is shutting down");
-				server.shutdownNow();
-				System.err.println("*** server shut down");
-			}));
+            // announce AFTER server is up
+            Discovery.getInstance().announce(serviceName(), super.serverURI);
+            Log.info(String.format("%s gRPC Server ready @ %s\n", service, serverURI));
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.err.println("*** shutting down gRPC server");
+                server.shutdownNow();
+                System.err.println("*** server shut down");
+            }));
+
+            server.awaitTermination(); // block HERE, at the end
+			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
