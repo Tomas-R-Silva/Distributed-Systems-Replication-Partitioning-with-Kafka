@@ -28,7 +28,7 @@ public class ZohoGetAccount {
         //Zoho.getInstance().postMessage(account.mailboxAddress(), msg);
 
         //Teste do GetInboxMessage()
-        //String zMsg = Zoho.getInstance().getMessageZohoInfo("705").get(0).summary();
+        //String zMsg = Zoho.getInstance().getZohoMessage("705").get(0).summary();
         //String[] splited = zMsg.split("-");
         //Message msg = new Message(splited[0],splited[1],Set.of(splited[5]),splited[3],splited[4]);
         //msg.setCreationTime(Long.parseLong(splited[2]));

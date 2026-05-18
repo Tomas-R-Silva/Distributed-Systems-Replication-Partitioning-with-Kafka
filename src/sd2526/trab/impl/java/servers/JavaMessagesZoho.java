@@ -54,7 +54,7 @@ public class JavaMessagesZoho extends JavaMessages{
 		if( badParams( name, mid, pwd ) )
 			return error(BAD_REQUEST);
 		try{
-           String zMsg = Zoho.getInstance().getMessageZohoInfo(mid).get(0).summary();
+           String zMsg = Zoho.getInstance().getZohoMessage(mid).get(0).summary();
            String[] splited = zMsg.split("-");
            Message msg = new Message(splited[0],splited[1],Set.of(splited[5]),splited[3],splited[4]);
            msg.setCreationTime(Long.parseLong(splited[2]));

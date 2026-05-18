@@ -117,7 +117,7 @@ public class Zoho {
         
     }
 
-    public List<ZohoQueryMessages> getMessageZohoInfo(String mid) throws Exception{
+    public List<ZohoQueryMessages> getZohoMessage(String mid) throws Exception{
         List<ZohoQueryMessages> list = new LinkedList<>();
         List<ZohoQueryMessages> it = this.searchZoho(mid);
         for (ZohoQueryMessages zMsg : it) {
@@ -143,7 +143,7 @@ public class Zoho {
     }
 
     public void RemoveMessage(String mid) throws Exception{
-        List<ZohoQueryMessages> msgZohoinfo = getMessageZohoInfo(mid);
+        List<ZohoQueryMessages> msgZohoinfo = getZohoMessage(mid);
 
         for (ZohoQueryMessages zohoQueryMessages : msgZohoinfo) {
             String folderID = zohoQueryMessages.folderId();
