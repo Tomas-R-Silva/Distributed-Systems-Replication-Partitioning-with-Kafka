@@ -213,12 +213,29 @@ public class Zoho {
 
     }
 
+
     public void deleteUserInbox(String name)throws Exception{
         List<ZohoQueryMessages> it = this.searchZoho(name);
         List<String> list = new LinkedList<String>();
         for (ZohoQueryMessages zMsg : it) {
             String[] msg = zMsg.summary().split("-");
             if(!list.contains(msg[0]) && msg[5].contains(name)){
+                list.add(msg[0]);
+            }
+        }
+
+        for (String midToDelete : list) {
+            this.removeMessage(midToDelete);
+        }
+    
+    }
+
+    public void cleanZoho()throws Exception{
+        List<ZohoQueryMessages> it = this.getEmailInFolder();
+        List<String> list = new LinkedList<String>();
+        for (ZohoQueryMessages zMsg : it) {
+            String[] msg = zMsg.summary().split("-");
+            if(!list.contains(msg[0])){
                 list.add(msg[0]);
             }
         }

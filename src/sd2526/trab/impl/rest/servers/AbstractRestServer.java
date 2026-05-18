@@ -14,7 +14,7 @@ import sd2526.trab.impl.utils.IP;
 
 
 public abstract class AbstractRestServer extends AbstractServer {
-	private static final String SERVER_BASE_URI = "https://%s:%s%s";
+	private static final String SERVER_BASE_URI = "https://%s:%s/rest";
 	private static final String REST_CTX = "/rest";
 
 	static {
@@ -28,7 +28,7 @@ public abstract class AbstractRestServer extends AbstractServer {
 	final protected String serverURI;
 
 	protected AbstractRestServer(Logger log, String service, int port) throws UnknownHostException{
-		super(log, service, String.format(SERVER_BASE_URI, IP.hostname(), port, REST_CTX));
+		super(log, service, String.format(SERVER_BASE_URI, IP.hostname(), port));
 		this.Log = log;
 		this.port = port;
 		this.service = service;

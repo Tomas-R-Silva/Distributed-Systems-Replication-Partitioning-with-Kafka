@@ -9,24 +9,32 @@ import sd2526.trab.api.rest.RestMessages;
 import sd2526.trab.impl.api.java.AdminMessages;
 import sd2526.trab.impl.api.rest.RestAdminMessages;
 import sd2526.trab.impl.java.clients.Clients;
-import sd2526.trab.impl.java.servers.JavaMessages;
+import sd2526.trab.impl.java.servers.JavaMessagesZoho;
+import sd2526.trab.impl.zoho.Zoho;
 
 public class RestMessagesProxyResource extends RestResource implements RestMessages, RestAdminMessages{
     
-    static boolean isGateway = false;
+    //static boolean isGateway = false;
+	static boolean cleanState = false;
 	
 	Messages impl;	
 
 	synchronized Messages impl() {
 		if( impl == null )
-			impl = isGateway ? Clients.MessagesClient.get() : JavaMessages.getInstance();	
+			impl =  JavaMessagesZoho.getInstance();	
 		return impl;
 	}
 	
 	public RestMessagesProxyResource() {}
 	
-	RestMessagesProxyResource(boolean gw) {	
-		isGateway = gw;
+	RestMessagesProxyResource(boolean cleanState) {	
+		if(cleanState){
+			try{
+				Zoho.getInstance().cleanZoho();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	@Override
