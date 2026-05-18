@@ -48,6 +48,27 @@ public class JavaMessagesZoho extends JavaMessages{
 
     //Done - to review
     @Override
+    public Result<Message> getInboxMessage(String name, String mid, String pwd) {
+		Log.info( () -> "getInboxMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
+		
+		if( badParams( name, mid, pwd ) )
+			return error(BAD_REQUEST);
+		try{
+           String zMsg = Zoho.getInstance().getMessageZohoInfo(mid).get(0).summary();
+           String[] splited = zMsg.split("-");
+           Message msg = new Message(splited[0],splited[1],Set.of(splited[5]),splited[3],splited[4]);
+           msg.setCreationTime(Long.parseLong(splited[2]));
+
+           return Result.ok(msg);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+		return null;		
+	}
+
+    //Done - to review
+    @Override
     public Result<List<String>> searchInbox(String name, String pwd, String query) {
 		Log.info( () -> "searchInbox : name = %s, pwd = %s, query=%s\n".formatted(name, pwd, query));
         

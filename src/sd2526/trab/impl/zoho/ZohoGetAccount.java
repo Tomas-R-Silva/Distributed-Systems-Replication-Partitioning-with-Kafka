@@ -27,11 +27,18 @@ public class ZohoGetAccount {
         //Message msg = new Message("705", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain 706");
         //Zoho.getInstance().postMessage(account.mailboxAddress(), msg);
 
+        //Teste do GetInboxMessage()
+        //String zMsg = Zoho.getInstance().getMessageZohoInfo("705").get(0).summary();
+        //String[] splited = zMsg.split("-");
+        //Message msg = new Message(splited[0],splited[1],Set.of(splited[5]),splited[3],splited[4]);
+        //msg.setCreationTime(Long.parseLong(splited[2]));
+        //System.out.println(msg);
+
         //Teste do SearchInbox()
         //System.out.println(Zoho.getInstance().searchInbox("706"));
 
         //Teste do RemoveMessage()
-        Zoho.getInstance().RemoveMessage("705");
+        //Zoho.getInstance().RemoveMessage("705");
         
     }
 }

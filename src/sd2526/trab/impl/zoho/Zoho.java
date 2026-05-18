@@ -117,13 +117,13 @@ public class Zoho {
         
     }
 
-    private List<ZohoQueryMessages> getMessageZohoInfo(String mid) throws Exception{
+    public List<ZohoQueryMessages> getMessageZohoInfo(String mid) throws Exception{
         List<ZohoQueryMessages> list = new LinkedList<>();
         List<ZohoQueryMessages> it = this.searchZoho(mid);
         for (ZohoQueryMessages zMsg : it) {
             String[] msg = zMsg.summary().split("-");
             if(msg[0].equals(mid)){
-                ZohoQueryMessages folderIdAndMsgId = new ZohoQueryMessages("", zMsg.folderId(), zMsg.messageId(), "","","","");
+                ZohoQueryMessages folderIdAndMsgId = new ZohoQueryMessages(zMsg.fromAddress(), zMsg.folderId(), zMsg.messageId(), zMsg.sender(),zMsg.subject(),zMsg.summary(),zMsg.sentDateInGMT());
                 list.add(folderIdAndMsgId);
             }
         }
