@@ -22,10 +22,10 @@ public class ZohoGetAccount {
         }
 
         //Teste do PostMessage()
-        //Message msg = new Message("706", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain");
-        //Zoho.getInstance().postMessage(account.mailboxAddress(), msg);
-        //Message msg = new Message("705", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain 706");
-        //Zoho.getInstance().postMessage(account.mailboxAddress(), msg);
+        //Message msg1 = new Message("706", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain");
+        //Zoho.getInstance().postMessage(account.mailboxAddress(), msg1);
+        //Message msg2 = new Message("705", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain 706");
+        //Zoho.getInstance().postMessage(account.mailboxAddress(), msg2);
 
         //Teste do GetInboxMessage()
         //String zMsg = Zoho.getInstance().getZohoMessage("705").get(0).summary();
