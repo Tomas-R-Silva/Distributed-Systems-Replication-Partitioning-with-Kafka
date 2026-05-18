@@ -32,6 +32,8 @@ import sd2526.trab.impl.db.DB;
 import sd2526.trab.impl.java.clients.Clients;
 import sd2526.trab.impl.utils.IP;
 import sd2526.trab.impl.utils.Sleep;
+import sd2526.trab.kafka.KafkaPublisher;
+import sd2526.trab.kafka.KafkaSubscriber;
 
 public class JavaMessages extends JavaBaseService implements Messages, AdminMessages {
 	
@@ -42,6 +44,8 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 	final JobDispatcher jobs;
 	final AtomicLong counter = new AtomicLong(0L);	
 	private static Logger Log = Logger.getLogger(JavaMessages.class.getName());
+	private final KafkaPublisher publisher = KafkaPublisher.createPublisher(" kafka:9092");
+	private final KafkaSubscriber subscriber = KafkaSubscriber.createSubscriber("localhost:9092, kafka:9092", List.of(topic));
 
 	
 	protected final Cache<String, Message> messagesCache = CacheBuilder.newBuilder()

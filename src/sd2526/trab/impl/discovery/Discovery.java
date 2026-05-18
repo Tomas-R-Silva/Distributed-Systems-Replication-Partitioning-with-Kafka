@@ -82,6 +82,7 @@ class DiscoveryImpl implements Discovery {
 	@Override
 	public void announce(String serviceName, String serviceURI) {
 		Log.info(String.format("Starting Discovery announcements on: %s for: %s -> %s\n", DISCOVERY_ADDR, serviceName, serviceURI));
+		System.out.println("ANNOUNCE CALLED: " + serviceName + " -> " + serviceURI);
 
 		var pktBytes = String.format("%s%s%s", serviceName, DELIMITER, serviceURI).getBytes();
 		var pkt = new DatagramPacket(pktBytes, pktBytes.length, DISCOVERY_ADDR);
