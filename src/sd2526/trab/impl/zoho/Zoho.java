@@ -193,7 +193,7 @@ public class Zoho {
             var accessToken = new OAuth2AccessToken( tokenManager.getValidAccessToken() );
 
             //Path
-            OAuthRequest request = new OAuthRequest(Verb.DELETE, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + FOLDERS + "/" + folderID + MESSAGES + "/" + msgID);
+            OAuthRequest request = new OAuthRequest(Verb.DELETE, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + FOLDERS + "/" + folderID + MESSAGES + "/" + msgID + "?expunge=true");
             //Header
             request.addHeader("Content-Type", "application/json");
             //Payload
