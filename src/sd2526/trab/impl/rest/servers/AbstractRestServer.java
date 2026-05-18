@@ -15,41 +15,42 @@ import sd2526.trab.impl.utils.IP;
 
 public abstract class AbstractRestServer extends AbstractServer {
 	private static final String SERVER_BASE_URI = "https://%s:%s/rest";
-	private static final String REST_CTX = "/rest";
-
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
 		System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s\n");
 	}
 
 	final protected int port;
-	final protected Logger Log;
-	final protected String service;
-	final protected String serverURI;
 
 	protected AbstractRestServer(Logger log, String service, int port) throws UnknownHostException{
 		super(log, service, String.format(SERVER_BASE_URI, IP.hostname(), port));
-		this.Log = log;
 		this.port = port;
-		this.service = service;
-		this.serverURI = SERVER_BASE_URI.formatted(IP.hostname(),port);
 	}
 
 	protected void start() {
-		
-		try{
-			ResourceConfig config = new ResourceConfig();	
-			registerResources( config );
-			var uri = URI.create("https://0.0.0.0:%s/rest".formatted(port));
-			System.out.println(uri);			
-			JdkHttpServerFactory.createHttpServer( uri, config, javax.net.ssl.SSLContext.getDefault());
+		try {
+			ResourceConfig config = new ResourceConfig();
+			registerResources(config);
 
-			if( service != null )
-				Discovery.getInstance().announce(serviceName(), super.serverURI);
-			
-			Log.info(String.format("%s Server ready @ %s\n",  service, serverURI));
-		}catch(Exception e){
+			var uri = URI.create("https://0.0.0.0:%s/rest".formatted(port));
+			Log.info("Starting server at: " + uri);
+
+			JdkHttpServerFactory.createHttpServer(uri, config, javax.net.ssl.SSLContext.getDefault());
+
+			if (service == null) {
+				Log.info("ERROR: service name is null, cannot announce");
+				return;
+			}
+
+			Log.info("Announcing: " + serviceName() + " @ " + super.serverURI);
+			Discovery.getInstance().announce(serviceName(), super.serverURI);
+
+			Log.info(String.format("%s Server ready @ %s\n", service, serverURI));
+
+		} catch (Exception e) {
+			Log.info("FATAL: Server startup failed — " + e.getMessage());
 			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 	

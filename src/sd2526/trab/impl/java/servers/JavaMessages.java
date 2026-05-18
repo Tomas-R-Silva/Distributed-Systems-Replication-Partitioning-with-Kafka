@@ -44,8 +44,8 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 	final JobDispatcher jobs;
 	final AtomicLong counter = new AtomicLong(0L);	
 	private static Logger Log = Logger.getLogger(JavaMessages.class.getName());
-	private final KafkaPublisher publisher = KafkaPublisher.createPublisher(" kafka:9092");
-	private final KafkaSubscriber subscriber = KafkaSubscriber.createSubscriber("localhost:9092, kafka:9092", List.of(topic));
+	//private final KafkaPublisher publisher = KafkaPublisher.createPublisher(" kafka:9092");
+	//private final KafkaSubscriber subscriber = KafkaSubscriber.createSubscriber("localhost:9092, kafka:9092", List.of(topic));
 
 	
 	protected final Cache<String, Message> messagesCache = CacheBuilder.newBuilder()

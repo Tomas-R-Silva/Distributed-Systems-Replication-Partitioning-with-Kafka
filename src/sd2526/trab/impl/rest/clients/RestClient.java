@@ -41,8 +41,8 @@ public class RestClient {
 		this.serverURI = serverURI;
 		this.config = new ClientConfig();
 
-		config.property(ClientProperties.READ_TIMEOUT, READ_TIMEOUT);
-		config.property(ClientProperties.CONNECT_TIMEOUT, CONNECT_TIMEOUT);
+		this.config.property(ClientProperties.READ_TIMEOUT, READ_TIMEOUT);
+		this.config.property(ClientProperties.CONNECT_TIMEOUT, CONNECT_TIMEOUT);
 		this.client = ClientBuilder.newClient(config);
 		this.target = client.target( serverURI ).path( servicePath );
 	}
