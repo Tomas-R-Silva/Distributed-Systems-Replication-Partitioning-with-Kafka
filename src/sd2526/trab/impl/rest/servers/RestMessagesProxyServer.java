@@ -19,12 +19,12 @@ public class RestMessagesProxyServer extends AbstractRestServer{
 
 	@Override
 	void registerResources(ResourceConfig config) {
-		config.registerInstances(new RestMessagesProxyResource(cleanState));
-		//config.register(RestMessagesProxyResource.class);
+		RestMessagesProxyResource.cleanState(cleanState);
+		config.register(RestMessagesProxyResource.class);
 	}
 
 	public static void main(String[] args) throws Exception{
-		//new RestMessagesProxyServer(Boolean.parseBoolean(args[0])).start();
-		new RestMessagesProxyServer(true).start();
+		new RestMessagesProxyServer(Boolean.parseBoolean(args[0])).start();
+		//new RestMessagesProxyServer(true).start();
 	}
 }

@@ -46,6 +46,14 @@ public class JavaMessagesZoho extends JavaMessages{
         super();
     }
 
+    private static JavaMessagesZoho zohoInstance;
+
+    public static synchronized JavaMessagesZoho getInstance() {
+        if (zohoInstance == null)
+            zohoInstance = new JavaMessagesZoho();
+        return zohoInstance;
+    }
+
     //Done - to review
     @Override
     public Result<Message> getInboxMessage(String name, String mid, String pwd) {

@@ -3,6 +3,7 @@ package sd2526.trab.impl.rest.servers;
 import java.util.List;
 
 import jakarta.inject.Singleton;
+import jakarta.ws.rs.Path;
 import sd2526.trab.api.Message;
 import sd2526.trab.api.java.Messages;
 import sd2526.trab.api.rest.RestMessages;
@@ -12,22 +13,14 @@ import sd2526.trab.impl.java.clients.Clients;
 import sd2526.trab.impl.java.servers.JavaMessagesZoho;
 import sd2526.trab.impl.zoho.Zoho;
 
+@Singleton
 public class RestMessagesProxyResource extends RestResource implements RestMessages, RestAdminMessages{
     
-    //static boolean isGateway = false;
 	static boolean cleanState = false;
 	
 	Messages impl;	
 
-	synchronized Messages impl() {
-		if( impl == null )
-			impl =  JavaMessagesZoho.getInstance();	
-		return impl;
-	}
-	
-	public RestMessagesProxyResource() {}
-	
-	RestMessagesProxyResource(boolean cleanState) {	
+	public static void cleanState(boolean cs){
 		if(cleanState){
 			try{
 				Zoho.getInstance().cleanZoho();
@@ -36,6 +29,14 @@ public class RestMessagesProxyResource extends RestResource implements RestMessa
 			}
 		}
 	}
+
+	synchronized Messages impl() {
+		if( impl == null )
+			impl =  JavaMessagesZoho.getInstance();	
+		return impl;
+	}
+	
+	public RestMessagesProxyResource() {}
 	
 	@Override
 	public String postMessage(String pwd, Message msg) {
