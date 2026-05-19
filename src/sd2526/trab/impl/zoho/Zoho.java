@@ -21,6 +21,7 @@ public class Zoho {
 	static final String CLIENT_ID     = "1000.H1M4XR9TFHBK6YAJPPMG40TTMH9GVU";
     static final String CLIENT_SECRET = "ac9ab95412414559d68f5983ba9e3920d29f752767";
     static final String REFRESH_TOKEN = "1000.ffa375df0ea43ac47605b044a21a5694.c009985b534ac1beee2c82ffbf5a27cf";
+    static final String MAILADDRESS = "gf.guerreiro@zohomail.eu";
 
 	private static final String ACCOUNTS = "/accounts";
     private static final String MESSAGES = "/messages";
@@ -72,8 +73,8 @@ public class Zoho {
         //Header
         request.addHeader("Content-Type", "application/json");
         //Payload 
-        String metadata = msg.getId() + "-" + msg.getSender() + "-" + msg.getCreationTime() + "-" + msg.getSubject() + "-" + msg.getContents() + "-" + msg.getDestination();
-        ZohoMessages zohoMessages = new ZohoMessages(msg.getSender(), address, msg.getSubject(), metadata);
+        String metadata = msg.getId() + "-" + msg.getSender() + "-" + msg.getCreationTime() + "-" + msg.getSubject() + "-" + msg.getContents() + "-" + msg.getDestination() + "-" + address;
+        ZohoMessages zohoMessages = new ZohoMessages(MAILADDRESS, MAILADDRESS, msg.getSubject(), metadata);
         request.setPayload(JSON.encode(zohoMessages));
         //OAuth Header
         service.signRequest(accessToken, request);

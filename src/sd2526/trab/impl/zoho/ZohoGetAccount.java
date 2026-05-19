@@ -22,8 +22,8 @@ public class ZohoGetAccount {
         }
 
         //Teste do PostMessage()
-        //Message msg1 = new Message("706", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain");
-        //Zoho.getInstance().postMessage(account.mailboxAddress(), msg1);
+        //Message msg1 = new Message("706", "derek.pippen6@ourorg1", "derek.pippen6@ourorg1", "subject", "content with the email with the ourorg domain");
+        //Zoho.getInstance().postMessage("derek.pippen6@ourorg1", msg1);
         //Message msg2 = new Message("705", account.mailboxAddress(), account.mailboxAddress(), "subject", "content with the email with the ourorg domain 706");
         //Zoho.getInstance().postMessage(account.mailboxAddress(), msg2);
 
@@ -34,17 +34,23 @@ public class ZohoGetAccount {
         //msg.setCreationTime(Long.parseLong(splited[2]));
         //System.out.println(msg);
 
+        //Teste do GetZohoMessage()
+        System.out.println(Zoho.getInstance().getZohoMessage("ourorg0+0001").get(0).summary());
+
         //Teste do GetAllInboxMessages()
         //System.out.println(Zoho.getInstance().getAllZohoMessages());
 
         //Teste do SearchInbox()
-        //System.out.println(Zoho.getInstance().searchInbox("706"));
+        //System.out.println(Zoho.getInstance().searchInbox("ourorg0+0001"));
 
         //Teste do RemoveMessage()
         //Zoho.getInstance().removeMessage("706");
 
         //Teste do DeleteUserInbox()
         //Zoho.getInstance().deleteUserInbox(account.mailboxAddress());
+
+        //Teste do CleanZoho()
+        //Zoho.getInstance().cleanZoho();
         
     }
 }

@@ -57,19 +57,19 @@ public class JavaMessagesZoho extends JavaMessages{
     //Done - to review
     @Override
     public Result<Message> getInboxMessage(String name, String mid, String pwd) {
-		Log.info( () -> "getInboxMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
+		Log.info( () -> "Zoho getInboxMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
 		
 		if( badParams( name, mid, pwd ) )
 			return error(BAD_REQUEST);
 
         return getUser(name, pwd).then(() -> {
             try{
-            String zMsg = Zoho.getInstance().getZohoMessage(mid).get(0).summary();
-            String[] splited = zMsg.split("-");
-            Message msg = new Message(splited[0],splited[1],Set.of(splited[5]),splited[3],splited[4]);
-            msg.setCreationTime(Long.parseLong(splited[2]));
+                String zMsg = Zoho.getInstance().getZohoMessage(mid).get(0).summary();
+                String[] splited = zMsg.split("-");
+                Message msg = new Message(splited[0],splited[1],Set.of(splited[5]),splited[3],splited[4]);
+                msg.setCreationTime(Long.parseLong(splited[2]));
 
-            return Result.ok(msg);
+                return Result.ok(msg);
             }catch(Exception e){
                 e.printStackTrace();
                 return error(INTERNAL_ERROR);
@@ -96,7 +96,7 @@ public class JavaMessagesZoho extends JavaMessages{
     //Done - to review
     @Override
     public Result<List<String>> searchInbox(String name, String pwd, String query) {
-		Log.info( () -> "searchInbox : name = %s, pwd = %s, query=%s\n".formatted(name, pwd, query));
+		Log.info( () -> "Zoho searchInbox : name = %s, pwd = %s, query=%s\n".formatted(name, pwd, query));
         
         return getUser(name, pwd).then( () -> {
             try{
@@ -110,7 +110,7 @@ public class JavaMessagesZoho extends JavaMessages{
 
     @Override
 	public Result<Void> removeInboxMessage(String name, String mid, String pwd) {
-		Log.info( () -> "removeInboxMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
+		Log.info( () -> "Zoho removeInboxMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
 		
         return getUser(name, pwd).then( () -> {
             try{
@@ -127,10 +127,11 @@ public class JavaMessagesZoho extends JavaMessages{
     //Done - to review
     @Override
     protected void deliverToKnownLocalRecipients(Collection<String> addresses, Message msg) {
-		Log.info( () -> "deliverToKnownLocalRecipients : local known addresses = %s, msg = %s\n".formatted(addresses, msg));
+		Log.info( () -> "Zoho deliverToKnownLocalRecipients : local known addresses = %s, msg = %s\n".formatted(addresses, msg));
 
         for( var address : addresses){
             try{
+                Log.info( () -> "Zoho deliverToKnownLocalRecipients to %s\n".formatted(address));
                 Zoho.getInstance().postMessage(address, msg);
             }catch( Exception e){
                 e.printStackTrace();
@@ -142,7 +143,7 @@ public class JavaMessagesZoho extends JavaMessages{
     //Done - to review
     @Override
     protected void reportUnknownLocalRecipients(Collection<String> addresses, Message msg) {
-		Log.info( () -> "reportUnknownLocalRecipients : unknown addresses = %s, msg = %s\n".formatted(addresses, msg));
+		Log.info( () -> "Zoho reportUnknownLocalRecipients : unknown addresses = %s, msg = %s\n".formatted(addresses, msg));
 
 		var senderDomain = super.getDomain( msg.senderAddress() );
 		
@@ -161,7 +162,7 @@ public class JavaMessagesZoho extends JavaMessages{
 
     @Override
     protected Result<Void> deleteFromLocalInbox(String mid) {
-		Log.info( () -> "deleteFromLocalInbox : mid = %s\n".formatted(mid));
+		Log.info( () -> "Zoho deleteFromLocalInbox : mid = %s\n".formatted(mid));
 
         try{
             //delete da msg em si
@@ -177,7 +178,7 @@ public class JavaMessagesZoho extends JavaMessages{
     //apagar uma inbox qnd o user é eliminado
     @Override
     public Result<Void> remoteDeleteUserInbox(String name) {
-		Log.info( () -> "remoteDeleteUserInbox : name = %s\n".formatted(name));
+		Log.info( () -> "Zoho remoteDeleteUserInbox : name = %s\n".formatted(name));
 
          try{
             Zoho.getInstance().deleteUserInbox(name);
