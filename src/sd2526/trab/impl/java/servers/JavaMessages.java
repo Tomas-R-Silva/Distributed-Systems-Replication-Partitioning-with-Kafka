@@ -40,12 +40,14 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 	private static final int REMOTE_COMM_DEADLINE = 90000;
 	private static final long MESSAGES_CACHE_EXPIRATION = 30000;
 	private static final long DIRTY_INBOX_CACHE_EXPIRATION = 10000;
+	private static final String TOPIC = JavaMessages.THIS_DOMAIN;
 
 	final JobDispatcher jobs;
 	final AtomicLong counter = new AtomicLong(0L);	
 	private static Logger Log = Logger.getLogger(JavaMessages.class.getName());
-	//private final KafkaPublisher publisher = KafkaPublisher.createPublisher(" kafka:9092");
-	//private final KafkaSubscriber subscriber = KafkaSubscriber.createSubscriber("localhost:9092, kafka:9092", List.of(topic));
+	private final KafkaPublisher publisher = KafkaPublisher.createPublisher("kafka:9092");
+	private final KafkaSubscriber subscriber = KafkaSubscriber.createSubscriber("kafka:9092", List.of(TOPIC));
+	private AtomicLong version;
 
 	
 	protected final Cache<String, Message> messagesCache = CacheBuilder.newBuilder()
@@ -79,6 +81,8 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 	@Override
 	public Result<String> postMessage(String pwd, Message msg) {
 		Log.info( () -> "postMessage : pwd = %s, msg = %s\n".formatted(pwd, msg));
+
+		long offset = publisher.publish(TOPIC);
 
 		return getUser(msg.getSender(), pwd)					
 				.thenWith( (user) -> doAsyncPost( user, msg ));			
