@@ -34,20 +34,22 @@ import sd2526.trab.impl.utils.IP;
 import sd2526.trab.impl.utils.Sleep;
 import sd2526.trab.kafka.KafkaPublisher;
 import sd2526.trab.kafka.KafkaSubscriber;
+import sd2526.trab.kafka.ReplicationManager;
+import sd2526.trab.kafka.Events.DeleteInboxEvent;
+import sd2526.trab.kafka.Events.DeleteMessageEvent;
+import sd2526.trab.kafka.Events.PostEvent;
 
 public class JavaMessages extends JavaBaseService implements Messages, AdminMessages {
 	
 	private static final int REMOTE_COMM_DEADLINE = 90000;
 	private static final long MESSAGES_CACHE_EXPIRATION = 30000;
 	private static final long DIRTY_INBOX_CACHE_EXPIRATION = 10000;
-	private static final String TOPIC = JavaMessages.THIS_DOMAIN;
+	protected static final String TOPIC = JavaMessages.THIS_DOMAIN;
 
 	final JobDispatcher jobs;
 	final AtomicLong counter = new AtomicLong(0L);	
 	private static Logger Log = Logger.getLogger(JavaMessages.class.getName());
-	private final KafkaPublisher publisher = KafkaPublisher.createPublisher("kafka:9092");
-	private final KafkaSubscriber subscriber = KafkaSubscriber.createSubscriber("kafka:9092", List.of(TOPIC));
-	private AtomicLong version;
+	private final ReplicationManager manager;
 
 	
 	protected final Cache<String, Message> messagesCache = CacheBuilder.newBuilder()
@@ -76,13 +78,14 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 	
 	protected JavaMessages() {
 		this.jobs = new JobDispatcher();
+		this.manager = new ReplicationManager(TOPIC, this, counter);
+		this.manager.start();
 	}
 
 	@Override
 	public Result<String> postMessage(String pwd, Message msg) {
 		Log.info( () -> "postMessage : pwd = %s, msg = %s\n".formatted(pwd, msg));
 
-		long offset = publisher.publish(TOPIC);
 
 		return getUser(msg.getSender(), pwd)					
 				.thenWith( (user) -> doAsyncPost( user, msg ));			
@@ -129,11 +132,15 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 	public Result<Void> removeInboxMessage(String name, String mid, String pwd) {
 		Log.info( () -> "removeInboxMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
 		
-		return getUser(name, pwd )
-				.then( () -> DB.deleteOne( new InboxEntry(mid, name) ) ).mapToVoid()
-				.then( () -> {
-					gcDeletedMessageCache.put( mid, mid );
-				});
+
+			return getUser(name, pwd)
+			.then(() -> {
+
+				manager.publishRemoveInbox(counter,name,mid,pwd);
+
+				return ok();
+			})
+			.mapToVoid();
 	}
 
 	@Override
@@ -290,8 +297,9 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 			System.out.println("Local Recipients:" + localAdresses);
 			System.out.println("Remote Recipients:" + remoteAddresses);
 
-			if (localAdresses.size() > 0)
-				postToLocalInboxes(localAdresses, msg);
+			if (localAdresses.size() > 0){
+				manager.publishPost(msg, new HashSet<>(localAdresses));
+			}
 
 			if (remoteAddresses.size() > 0) {
 
@@ -315,12 +323,15 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 			return Result.ok(msg.getId());
 		});
 	}
+
+
 		
 		public Result<Void> doAsyncDelete( Message msg ) {
 			var domains = msg.getDestination().stream().map( r -> r.split("@")[1]).collect( Collectors.toSet() );
 			for( var domain : domains )
 				if( domain.equals( IP.domain() ))
 					deleteFromLocalInbox( msg.getId() );
+				// coloco aqui a parte do Kafka?
 				else
 					jobs.submit(domain, () -> {
 						super.reTry(()-> Clients.AdminMessagesClient.get(domain).remoteDeleteMessage(msg.getId()), REMOTE_COMM_DEADLINE);			
@@ -372,5 +383,29 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 				instance = new JavaMessages();
 			return instance;
 		}
+
+		//Kafka
+		public void applyPost(PostEvent e) {
+
+			Message msg = e.getMsg();
+			messagesCache.put(msg.getId(), msg);
+			postToLocalInboxes(e.getLocalRecipients(), msg);
+		}
+
+		public void applyRemoveInbox(DeleteInboxEvent e){
+			
+			 DB.deleteOne( new InboxEntry(e.getMid(), e.getName() ) ).mapToVoid()
+				.then( () -> {
+					gcDeletedMessageCache.put( e.getMid(), e.getMid() );
+				});
+		}
+
+		public void applyDeleteMessageEvent( DeleteMessageEvent event){
+			deleteFromLocalInbox(event.getMid());
+		}
+
+
+
+
 	}
 
