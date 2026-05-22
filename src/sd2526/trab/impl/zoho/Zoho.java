@@ -28,6 +28,7 @@ public class Zoho {
     private static final String SEARCH = "/search";
     private static final String FOLDERS = "/folders";
     private static final String VIEW = "/view";
+    private static final String CONTENT = "/content";
 
     final OAuth20Service service;
     final ZohoTokenManager tokenManager;
@@ -72,8 +73,9 @@ public class Zoho {
         OAuthRequest request = new OAuthRequest(Verb.POST, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + MESSAGES);
         //Header
         request.addHeader("Content-Type", "application/json");
+        System.out.println(msg.getSender());
         //Payload 
-        String metadata = msg.getId() + "-" + msg.getSender() + "-" + msg.getCreationTime() + "-" + msg.getSubject() + "-" + msg.getContents() + "-" + msg.getDestination() + "-" + address;
+        String metadata = msg.getId() + "-" + msg.getSender().replace("<","(").replace(">",")") + "-" + msg.getCreationTime() + "-" + msg.getSubject() + "-" + msg.getContents() + "-" + msg.getDestination() + "-" + address;
         ZohoMessages zohoMessages = new ZohoMessages(MAILADDRESS, MAILADDRESS, msg.getSubject(), metadata);
         request.setPayload(JSON.encode(zohoMessages));
         //OAuth Header
@@ -165,6 +167,8 @@ public class Zoho {
             //OAuth Header
             service.signRequest(accessToken, request);
 
+            System.out.println(request);
+
             try (Response response = service.execute(request)) {
                 if( response.isSuccessful() ) {
                     //var body = response.getBody();
@@ -177,9 +181,40 @@ public class Zoho {
 
     }
 
+    public ZohoContent getContent(String zohoFolderID,String zohoMessageID) throws Exception{
+        var accessToken = new OAuth2AccessToken( tokenManager.getValidAccessToken() );
+
+        //Path
+        OAuthRequest request = new OAuthRequest(Verb.GET, MAIL_API_BASE + ACCOUNTS + "/" + getAccount().accountId() + FOLDERS + "/" + zohoFolderID + MESSAGES + "/" + zohoMessageID + CONTENT);
+        //Header
+        request.addHeader("Content-Type", "application/json");
+        //Payload
+        //no payload
+        //OAuth Header
+        service.signRequest(accessToken, request);
+
+        System.out.println(request);
+        
+        try (Response response = service.execute(request)) {
+        	if( response.isSuccessful() ) {
+        		var body = response.getBody();
+          	    var data = JSON.decode(body, ZohoContentReply.class).data();
+                return data;
+                //return null;
+        	}
+        	else {
+        		System.err.println( response.getCode() + "/" + response.getBody() );
+                return null;
+        	}
+        }
+    }
+
     public List<ZohoQueryMessages> getZohoMessage(String mid) throws Exception{
         List<ZohoQueryMessages> list = new LinkedList<>();
         List<ZohoQueryMessages> it = this.searchZoho(mid);
+        if(it.isEmpty()){
+            return List.of();
+        }
         for (ZohoQueryMessages zMsg : it) {
             String[] msg = zMsg.summary().split("-");
             if(msg[0].equals(mid)){
