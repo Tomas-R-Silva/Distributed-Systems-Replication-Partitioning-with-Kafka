@@ -35,7 +35,7 @@ public class ZohoGetAccount {
         //System.out.println(msg);
 
         //Teste do GetZohoMessage()
-        System.out.println(Zoho.getInstance().getZohoMessage("ourorg0+0001").get(0).summary());
+        //System.out.println(Zoho.getInstance().getZohoMessage("ourorg0+0001").get(0).summary());
 
         //Teste do GetAllInboxMessages()
         //System.out.println(Zoho.getInstance().getAllZohoMessages());
@@ -44,13 +44,14 @@ public class ZohoGetAccount {
         //System.out.println(Zoho.getInstance().searchInbox("ourorg0+0001"));
 
         //Teste do RemoveMessage()
-        //Zoho.getInstance().removeMessage("706");
+        //Zoho.getInstance().removeMessage("ourorg0+0001");
 
         //Teste do DeleteUserInbox()
         //Zoho.getInstance().deleteUserInbox(account.mailboxAddress());
 
         //Teste do CleanZoho()
-        //Zoho.getInstance().cleanZoho();
+        Zoho.getInstance().cleanZoho();
+
         
     }
 }

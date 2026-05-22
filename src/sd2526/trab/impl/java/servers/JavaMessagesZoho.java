@@ -5,10 +5,13 @@ import static sd2526.trab.api.java.Result.ok;
 import static sd2526.trab.api.java.Result.ErrorCode.BAD_REQUEST;
 import static sd2526.trab.api.java.Result.ErrorCode.FORBIDDEN;
 import static sd2526.trab.api.java.Result.ErrorCode.INTERNAL_ERROR;
+import static sd2526.trab.api.java.Result.ErrorCode.NOT_FOUND;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -64,10 +67,27 @@ public class JavaMessagesZoho extends JavaMessages{
 
         return getUser(name, pwd).then(() -> {
             try{
-                String zMsg = Zoho.getInstance().getZohoMessage(mid).get(0).summary();
-                String[] splited = zMsg.split("-");
-                Message msg = new Message(splited[0],splited[1],Set.of(splited[5]),splited[3],splited[4]);
-                msg.setCreationTime(Long.parseLong(splited[2]));
+                List<ZohoQueryMessages> zMsgList = Zoho.getInstance().getZohoMessage(mid);
+                if(zMsgList.isEmpty()){
+                    return error(NOT_FOUND);
+                }
+                String folderID = zMsgList.get(0).folderId();
+                String messageID = zMsgList.get(0).messageId();
+                String zMsgHTML = Zoho.getInstance().getContent(folderID, messageID).content();
+                String zMsg = zMsgHTML.substring(5, zMsgHTML.length()-6);
+
+                String[] split = zMsg.split("-");
+
+                String id = split[0];
+                String sender = split[1].replace("(", "<").replace(")", ">");
+                long creationTime = Long.parseLong(split[2]);
+                String subject = split[3];
+                //to view
+                String destinationPart = split[5];
+                String contents = split[4];
+
+                Message msg = new Message(id, sender, parseDestinations(destinationPart), subject, contents);
+                msg.setCreationTime(creationTime);
 
                 return Result.ok(msg);
             }catch(Exception e){
@@ -76,6 +96,28 @@ public class JavaMessagesZoho extends JavaMessages{
             }
         });	
 	}
+
+    private static Set<String> parseDestinations(String destinationPart) {
+        String trimmed = destinationPart == null ? "" : destinationPart.trim();
+
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+            trimmed = trimmed.substring(1, trimmed.length() - 1);
+        }
+
+        if (trimmed.isEmpty()) {
+            return Set.of();
+        }
+
+        var destinations = new LinkedHashSet<String>();
+        for (String address : trimmed.split(",")) {
+            String value = address.trim();
+            if (!value.isEmpty()) {
+                destinations.add(value);
+            }
+        }
+        
+        return destinations;
+    }
 
     //Done - to review
     @Override
