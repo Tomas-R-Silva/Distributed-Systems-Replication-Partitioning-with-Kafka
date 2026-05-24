@@ -46,13 +46,11 @@ import sd2526.trab.kafka.Events.PostEvent;
 public class JavaMessagesKafka extends JavaMessages{
 
 	private static final int REMOTE_COMM_DEADLINE = 90000;
-	private static final long MESSAGES_CACHE_EXPIRATION = 30000;
-	private static final long DIRTY_INBOX_CACHE_EXPIRATION = 10000;
 	protected static final String TOPIC = JavaMessages.THIS_DOMAIN;
     
     private static Logger Log = Logger.getLogger(JavaMessagesKafka.class.getName());
     final AtomicLong counter = new AtomicLong(0L);
-	final AtomicLong version = new AtomicLong(0L);
+	public final AtomicLong version = new AtomicLong(0L);
     private final ReplicationManager manager;
     
     public JavaMessagesKafka(){
