@@ -1,10 +1,10 @@
 package sd2526.trab.kafka.Events;
 
-public class DeleteInboxEvent {
+public class DeleteInboxEvent extends Event {
     private String name;
     private String mid;
-    private long sid;
     private String pwd;
+
 
     public DeleteInboxEvent(){}
 
@@ -23,14 +23,6 @@ public class DeleteInboxEvent {
 
     public void setMid(String mid) {
         this.mid = mid;
-    }
-
-    public long getSid() {
-        return sid;
-    }
-
-    public void setSid(long sid) {
-        this.sid = sid;
     }
 
     public void setPwd(String pwd){

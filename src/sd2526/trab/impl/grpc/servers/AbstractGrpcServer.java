@@ -70,7 +70,7 @@ public abstract class AbstractGrpcServer extends AbstractServer {
             server.awaitTermination(); // block HERE, at the end
 			
 		}catch(Exception e){
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 	

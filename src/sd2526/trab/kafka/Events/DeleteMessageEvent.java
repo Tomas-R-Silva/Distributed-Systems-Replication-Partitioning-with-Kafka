@@ -1,9 +1,8 @@
 package sd2526.trab.kafka.Events;
 
-public class DeleteMessageEvent {
+public class DeleteMessageEvent extends Event {
 
     private String mid;
-    private long sid;
 
     public DeleteMessageEvent() {
     }
@@ -16,11 +15,4 @@ public class DeleteMessageEvent {
         this.mid = mid;
     }
 
-    public long getSid() {
-        return sid;
-    }
-
-    public void setSid(long sid) {
-        this.sid = sid;
-    }
 }

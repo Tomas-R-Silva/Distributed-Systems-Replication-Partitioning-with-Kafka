@@ -47,7 +47,8 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 	protected static final String TOPIC = JavaMessages.THIS_DOMAIN;
 
 	final JobDispatcher jobs;
-	final AtomicLong counter = new AtomicLong(0L);	
+	final AtomicLong counter = new AtomicLong(0L);
+	final AtomicLong version = new AtomicLong(0L);
 	private static Logger Log = Logger.getLogger(JavaMessages.class.getName());
 	private final ReplicationManager manager;
 
@@ -78,7 +79,7 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 	
 	protected JavaMessages() {
 		this.jobs = new JobDispatcher();
-		this.manager = new ReplicationManager(TOPIC, this, counter);
+		this.manager = new ReplicationManager(TOPIC, this, version);
 		this.manager.start();
 	}
 
@@ -136,7 +137,7 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 			return getUser(name, pwd)
 			.then(() -> {
 
-				manager.publishRemoveInbox(counter,name,mid,pwd);
+				manager.publishRemoveInbox(name,mid,pwd);
 
 				return ok();
 			})
@@ -296,6 +297,7 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 
 			System.out.println("Local Recipients:" + localAdresses);
 			System.out.println("Remote Recipients:" + remoteAddresses);
+			System.out.println("Local Adresses Size" + localAdresses.size());
 
 			if (localAdresses.size() > 0){
 				manager.publishPost(msg, new HashSet<>(localAdresses));

@@ -4,33 +4,15 @@ import java.util.Set;
 
 import sd2526.trab.api.Message;
 
-public class PostEvent {
+public class PostEvent extends Event {
     
-    private static final String TYPE = "POST";
-    private long sid;
     private Message msg;
     public Set<String> localRecipients;
     
-    
-
 
     public PostEvent(){}
 
-   
-    public static String getType() {
-        return TYPE;
-    }
 
-    
-    public long getSid() {
-        return sid;
-    }
-
-    public void setSid(long sid) {
-        this.sid = sid;
-    }
-
-   
     public Message getMsg() {
         return msg;
     }
