@@ -2,7 +2,7 @@ package sd2526.trab.kafka;
 
 import com.google.gson.Gson;
 import sd2526.trab.api.Message;
-import sd2526.trab.impl.java.servers.JavaMessages;
+import sd2526.trab.impl.java.servers.JavaMessagesKafka;
 import sd2526.trab.kafka.Events.*;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public class ReplicationManager {
     private final AtomicLong version;
     private final Gson gson;
 
-    private final JavaMessages service;
+    private final JavaMessagesKafka service;
 
     private boolean kafkaEnabled = false;
 
@@ -26,7 +26,7 @@ public class ReplicationManager {
     private static final int RETRY_SLEEP_MS = 1000;
 
     public ReplicationManager(String topic,
-                              JavaMessages service,
+                              JavaMessagesKafka service,
                               AtomicLong version) {
 
         this.topic = topic;

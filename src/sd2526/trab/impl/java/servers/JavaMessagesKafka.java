@@ -6,7 +6,6 @@ import static sd2526.trab.api.java.Result.ErrorCode.BAD_REQUEST;
 import static sd2526.trab.api.java.Result.ErrorCode.FORBIDDEN;
 import static sd2526.trab.api.java.Result.ErrorCode.INTERNAL_ERROR;
 import static sd2526.trab.api.java.Result.ErrorCode.NOT_FOUND;
-import static sd2526.trab.impl.java.servers.JavaMessages.REMOTE_COMM_DEADLINE;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -45,6 +44,11 @@ import sd2526.trab.kafka.Events.DeleteMessageEvent;
 import sd2526.trab.kafka.Events.PostEvent;
 
 public class JavaMessagesKafka extends JavaMessages{
+
+	private static final int REMOTE_COMM_DEADLINE = 90000;
+	private static final long MESSAGES_CACHE_EXPIRATION = 30000;
+	private static final long DIRTY_INBOX_CACHE_EXPIRATION = 10000;
+	protected static final String TOPIC = JavaMessages.THIS_DOMAIN;
     
     private static Logger Log = Logger.getLogger(JavaMessagesKafka.class.getName());
     final AtomicLong counter = new AtomicLong(0L);
