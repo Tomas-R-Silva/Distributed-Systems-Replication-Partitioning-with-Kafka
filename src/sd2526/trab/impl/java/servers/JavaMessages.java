@@ -37,7 +37,7 @@ import sd2526.trab.kafka.KafkaSubscriber;
 
 public class JavaMessages extends JavaBaseService implements Messages, AdminMessages {
 	
-	private static final int REMOTE_COMM_DEADLINE = 90000;
+	public static final int REMOTE_COMM_DEADLINE = 90000;
 	private static final long MESSAGES_CACHE_EXPIRATION = 30000;
 	private static final long DIRTY_INBOX_CACHE_EXPIRATION = 10000;
 

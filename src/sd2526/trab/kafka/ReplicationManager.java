@@ -1,8 +1,9 @@
 package sd2526.trab.kafka;
 
+import static sd2526.trab.api.java.Result.error;
+import static sd2526.trab.api.java.Result.ErrorCode.BAD_REQUEST;
 import static sd2526.trab.impl.java.servers.JavaMessages.REMOTE_COMM_DEADLINE;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -11,7 +12,6 @@ import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import com.google.api.client.json.Json;
 import com.google.gson.Gson;
 
 import sd2526.trab.api.Message;
@@ -28,6 +28,7 @@ import sd2526.trab.kafka.Events.DeleteInboxEvent;
 import sd2526.trab.kafka.Events.DeleteMessageEvent;
 import sd2526.trab.kafka.Events.Event;
 import sd2526.trab.kafka.Events.PostEvent;
+import sd2526.trab.api.java.Result.ErrorCode;
 
 public class ReplicationManager extends JavaMessages{
 
@@ -36,16 +37,13 @@ public class ReplicationManager extends JavaMessages{
     private KafkaPublisher publisher;
     private KafkaSubscriber subscriber;
 
-    private final String topic;
     private final Gson gson;
 
     SyncPoint syncPoint;
 
     private boolean kafkaEnabled = false;
 
-    private static final int RETRY_COUNT = 10;
-    private static final int RETRY_SLEEP_MS = 1000;
-    final AtomicLong counter = new AtomicLong(0L);
+    static final AtomicLong counter = new AtomicLong(0L);
 
     public ReplicationManager() {
         this.syncPoint = SyncPoint.getSyncPoint();
@@ -68,13 +66,17 @@ public class ReplicationManager extends JavaMessages{
         subscriber.start( new RecordProcessor() {
 			@Override
 			public void onReceive(ConsumerRecord<String, String> r) {
+                long offset = r.offset();
                 Event event = gson.fromJson(r.value(), Event.class);
                 switch(event.getType()){
                     case "POST" -> {
                         PostEvent e = gson.fromJson(r.value(), PostEvent.class);
-                        
+                        Message msg = e.getMsg();
+                        List<String> localRecipients = e.getLocalRecipients();
                         //aqui vamos fazer as alterações à DB de modo a que seja em todas as réplicas
                         //como o deliverToKnownLocalRecipients, ...
+                        var res = postToLocalInboxes(localRecipients, msg);
+                        syncPoint.setResult(offset, res.isOK() ? msg.getId() : null); //says that have written in the DB
                     }
 
                     case "REMOVE_INBOX" -> {
@@ -84,11 +86,14 @@ public class ReplicationManager extends JavaMessages{
                             .then( () -> {
                                 gcDeletedMessageCache.put( e.getMid(), e.getMid() );
                             });
+                        syncPoint.setResult(offset, "");
                     }
 
                     case "DELETE_MESSAGE" -> {
                         DeleteMessageEvent e = gson.fromJson(r.value(), DeleteMessageEvent.class);
                         //aqui vamos fazer as alterações à DB de modo a que seja em todas as réplicas
+                        deleteFromLocalInbox(e.getMid());
+                        syncPoint.setResult(offset, "");
                     }
                 }
 				
@@ -101,7 +106,9 @@ public class ReplicationManager extends JavaMessages{
     @Override
     public Result<String> doAsyncPost(User sender, Message msg) {
 
-        if(msg.getId() == null)
+        if(msg.getId() == null){
+            return error(BAD_REQUEST);
+        }
 
 		return getCachedMessage(msg.originId()).mapValue(Message::getId).orElse(() -> {
 			
@@ -120,9 +127,13 @@ public class ReplicationManager extends JavaMessages{
 			System.out.println("Remote Recipients:" + remoteAddresses);
 			System.out.println("Local Adresses Size" + localAdresses.size());
 
-			if (localAdresses.size() > 0){    
-				this.publishPost(sender, msg, new HashSet<>(localAdresses));
-			}
+			if (localAdresses.size() > 0) {
+                PostEvent event = new PostEvent();
+                event.setMsg(msg);
+                event.setLocalRecipients(localAdresses);
+                long offset = publisher.publish(IP.domain(), JSON.encode(event));
+                syncPoint.waitForResult(offset); // wait until subscriber has written to DB
+            }
 
 			if (remoteAddresses.size() > 0) {
 
@@ -151,9 +162,23 @@ public class ReplicationManager extends JavaMessages{
     public Result<Void> doAsyncDelete( Message msg ) {
         DeleteMessageEvent event = new DeleteMessageEvent();
         event.setMid(msg.getId());
-        long offset = publisher.publish(IP.domain(), JSON.encode(event));
-        syncPoint.waitForResult(offset);
-        syncPoint.setResult(offset, "");
+
+        var domains = msg.getDestination().stream()
+                .map(r -> r.split("@")[1])
+                .collect(Collectors.toSet());
+
+        for (var domain : domains) {
+            if (domain.equals(IP.domain())) {
+                // delete in all replicas
+                long offset = publisher.publish(IP.domain(), JSON.encode(event));
+                syncPoint.waitForResult(offset);
+            } else {
+                // remote domain, faz diretamente
+                jobs.submit(domain, () ->
+                        super.reTry(() -> Clients.AdminMessagesClient.get(domain)
+                                .remoteDeleteMessage(msg.getId()), REMOTE_COMM_DEADLINE));
+            }
+        }
         return Result.ok();
     }
 
@@ -162,9 +187,8 @@ public class ReplicationManager extends JavaMessages{
         //if??
         DeleteMessageEvent event = new DeleteMessageEvent();
         event.setMid(mid);
-		long offset = publisher.publish(IP.domain(), JSON.encode(event))
+		long offset = publisher.publish(IP.domain(), JSON.encode(event));
 		syncPoint.waitForResult(offset);
-        syncPoint.setResult(offset, "");
         return Result.ok();
 	}
 
@@ -173,23 +197,23 @@ public class ReplicationManager extends JavaMessages{
         var localAddresses = getLocalRecipientAddresses(msg);
         PostEvent event = new PostEvent();
         event.setMsg(msg);
-        event.setLocalRecipients(localAddresses)
+        event.setLocalRecipients(localAddresses);
         long offset = publisher.publish(IP.domain(), JSON.encode(event));
         syncPoint.waitForResult(offset);
-        syncPoint.setResult(offset, "");
         return Result.ok();
     }
 
     @Override
     public Result<Void> removeInboxMessage(String name, String mid, String pwd){
-        DeleteInboxEvent event = new DeleteInboxEvent();
-        event.setName(name);
-        event.setMid(mid);
-        event.setPwd(pwd);
-        long offset = publisher.publish(IP.domain(), JSON.encode(event));
-        syncPoint.waitForResult(offset);
-        syncPoint.setResult(offset, "");
-        return Result.ok();
+        return getUser(name, pwd).thenWith(user -> {
+            DeleteInboxEvent event = new DeleteInboxEvent();
+            event.setName(name);
+            event.setMid(mid);
+            event.setPwd(pwd);
+            long offset = publisher.publish(IP.domain(), JSON.encode(event));
+            syncPoint.waitForResult(offset);
+            return Result.ok();
+        });
     }
 
     private boolean canPublish() {
