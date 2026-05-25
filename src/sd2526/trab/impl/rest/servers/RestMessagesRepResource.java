@@ -12,7 +12,6 @@ import sd2526.trab.impl.java.servers.JavaMessagesKafka;
 import jakarta.ws.rs.ext.Provider;
 import sd2526.trab.kafka.VersionHeaderHandler;
 
-@Singleton
 @Provider
 public class RestMessagesRepResource extends RestResource implements RestMessages, RestAdminMessages{
 

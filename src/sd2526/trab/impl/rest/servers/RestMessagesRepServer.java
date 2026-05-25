@@ -22,8 +22,9 @@ public class RestMessagesRepServer extends AbstractRestServer{
 
     @Override
     void registerResources(ResourceConfig config) {
-        config.registerInstances(new RestMessagesRepResource());
-        config.registerInstances( new VersionHeaderHandler());
+        JavaMessagesKafka.getInstance();
+        config.register(RestMessagesRepResource.class);
+        config.register( VersionHeaderHandler.class);
     }
 
     public static void main(String[] args) throws Exception{
