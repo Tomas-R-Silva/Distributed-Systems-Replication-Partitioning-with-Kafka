@@ -1,4 +1,4 @@
-package lab11.utils;
+package sd2526.trab.impl.utils;
 
 import java.util.concurrent.ConcurrentHashMap;
 
