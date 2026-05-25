@@ -9,6 +9,7 @@ import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.ext.Provider;
 import sd2526.trab.api.rest.RestMessagesKafka;
+import sd2526.trab.impl.utils.SyncPoint;
 
 
 
@@ -26,8 +27,8 @@ public class VersionHeaderHandler implements ContainerResponseFilter, ContainerR
 
 	@Override
 	public void filter(ContainerRequestContext reqCtx, ContainerResponseContext resCtx) throws IOException {
-		var value = version.get();
-		if( value != null ) {
+		var value = SyncPoint.getSyncPoint().getVersion();
+		if( value != -1L ) {
 			resCtx.getHeaders().add(RestMessagesKafka.HEADER_VERSION, Long.toString( value ));
 		}
 	}

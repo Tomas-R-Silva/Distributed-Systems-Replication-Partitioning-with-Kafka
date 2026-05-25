@@ -19,7 +19,7 @@ public class RestMessagesRepResource extends RestResource implements RestMessage
 
     synchronized Messages impl() {
 		if( impl == null )
-			impl =  JavaMessagesKafka.getInstance();	
+			impl =  JavaMessagesKafka.getInstance();	//vai passar a replication manager
 		return impl;
 	}
 

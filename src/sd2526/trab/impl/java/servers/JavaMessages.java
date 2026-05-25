@@ -41,7 +41,7 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 	private static final long MESSAGES_CACHE_EXPIRATION = 30000;
 	private static final long DIRTY_INBOX_CACHE_EXPIRATION = 10000;
 
-	final JobDispatcher jobs;
+	protected final JobDispatcher jobs;
 	final AtomicLong counter = new AtomicLong(0L);	
 	private static Logger Log = Logger.getLogger(JavaMessages.class.getName());
 	//private final KafkaPublisher publisher = KafkaPublisher.createPublisher(" kafka:9092");

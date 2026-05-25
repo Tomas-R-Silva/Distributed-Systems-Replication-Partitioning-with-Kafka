@@ -38,6 +38,7 @@ import sd2526.trab.impl.java.clients.Clients;
 import sd2526.trab.impl.utils.IP;
 import sd2526.trab.impl.utils.JSON;
 import sd2526.trab.impl.utils.Sleep;
+import sd2526.trab.impl.utils.SyncPoint;
 import sd2526.trab.kafka.ReplicationManager;
 import sd2526.trab.kafka.Events.DeleteInboxEvent;
 import sd2526.trab.kafka.Events.DeleteMessageEvent;
@@ -48,14 +49,16 @@ public class JavaMessagesKafka extends JavaMessages{
 	private static final int REMOTE_COMM_DEADLINE = 90000;
 	protected static final String TOPIC = JavaMessages.THIS_DOMAIN;
     
-    private static Logger Log = Logger.getLogger(JavaMessagesKafka.class.getName());
+    	
     final AtomicLong counter = new AtomicLong(0L);
-	public final AtomicLong version = new AtomicLong(0L);
     private final ReplicationManager manager;
+	SyncPoint syncPoint;
+	
     
     public JavaMessagesKafka(){
         super();
-        this.manager = new ReplicationManager(TOPIC, this, version);
+		syncPoint = SyncPoint.getSyncPoint();
+        this.manager = new ReplicationManager(TOPIC, this);
 		this.manager.start();
     }
 
@@ -72,6 +75,16 @@ public class JavaMessagesKafka extends JavaMessages{
 				return ok();
 			})
 			.mapToVoid();
+	}
+
+	@Override
+	public Result<String> postMessage(String pwd, Message msg) {
+		Log.info( () -> "postMessage : pwd = %s, msg = %s\n".formatted(pwd, msg));
+
+		syncPoint.waitForVersion();
+
+		return getUser(msg.getSender(), pwd)					
+				.thenWith( (user) -> doAsyncPost( user, msg ));			
 	}
 
     @Override
@@ -143,6 +156,7 @@ public class JavaMessagesKafka extends JavaMessages{
 			Message msg = e.getMsg();
 			messagesCache.put(msg.getId(), msg);
 			postToLocalInboxes(e.getLocalRecipients(), msg);
+			//setResult
 		}
 
 		public void applyRemoveInbox(DeleteInboxEvent e){
