@@ -3,6 +3,8 @@ package sd2526.trab.kafka;
 import static sd2526.trab.api.java.Result.error;
 import static sd2526.trab.api.java.Result.ErrorCode.BAD_REQUEST;
 import static sd2526.trab.impl.java.servers.JavaMessages.REMOTE_COMM_DEADLINE;
+import static sd2526.trab.api.java.Result.ErrorCode.FORBIDDEN;
+import static sd2526.trab.api.java.Result.ErrorCode.INTERNAL_ERROR;
 
 import java.util.List;
 import java.util.Set;
@@ -30,6 +32,7 @@ import sd2526.trab.kafka.Events.DeleteMessageEvent;
 import sd2526.trab.kafka.Events.Event;
 import sd2526.trab.kafka.Events.PostEvent;
 import sd2526.trab.api.java.Result.ErrorCode;
+import static sd2526.trab.api.java.Result.ok;
 
 public class ReplicationManager extends JavaMessages{
 
@@ -175,6 +178,66 @@ public class ReplicationManager extends JavaMessages{
 			return Result.ok(msg.getId());
 		});
 	}
+
+    
+    @Override
+    public Result<List<String>> searchInbox(String name, String pwd, String query) {
+        Log.info( () -> "searchInbox : name = %s, pwd = %s, query=%s\n".formatted(name, pwd, query));
+        
+        String safeQuery = query.replace("'", "''");  // escapa o apóstrofo
+        
+        var sqlExpr = """
+                SELECT m.id FROM Message m
+                RIGHT JOIN InboxEntry e
+                ON e.mid = m.id 
+                AND e.recipient = '%s'
+                WHERE (upper(m.subject) LIKE '%%%s%%' OR upper(m.contents) LIKE '%%%s%%')
+                """.formatted(name, safeQuery.toUpperCase(), safeQuery.toUpperCase());
+
+        return getUser(name, pwd)
+                .then(() -> DB.select(sqlExpr, String.class));		
+    }  
+    
+    @Override
+    public Result<Message> getInboxMessage(String name, String mid, String pwd) {
+        Long v = VersionHeaderHandler.version.get();
+        if (v != null) {
+            syncPoint.waitForVersion(v);
+        }
+        return super.getInboxMessage(name, mid, pwd);
+    }
+
+    @Override
+    public Result<List<String>> getAllInboxMessages(String name, String pwd) {
+        Long v = VersionHeaderHandler.version.get();
+        if (v != null) {
+            syncPoint.waitForVersion(v);
+        }
+        return super.getAllInboxMessages(name, pwd);
+    }
+
+    @Override
+	public Result<Void> deleteMessage(String name, String mid, String pwd) {
+		Log.info( () -> "deleteMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
+		System.out.println("Enters the delete");
+
+		return getUser(name, pwd )
+			.then(() -> getOneMessageDB(mid))
+			.thenWith(msg -> name.equals( getName(msg.senderAddress())) ? ok(msg) : error(FORBIDDEN) )
+			.thenWith((msg) -> doAsyncDelete(msg));
+	}
+
+    @Override
+    protected Result<Message> getCachedMessage(String mid) {
+
+		var msg = messagesCache.getIfPresent(mid);
+
+		if (msg != null)
+			return ok(msg);
+
+		return getOneMessageDB(mid);
+	}
+    
 
     @Override
     public Result<Void> doAsyncDelete( Message msg ) {

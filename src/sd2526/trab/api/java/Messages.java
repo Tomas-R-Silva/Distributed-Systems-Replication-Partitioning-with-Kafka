@@ -94,4 +94,5 @@ public interface Messages {
 	 */
 	Result<List<String>> searchInbox(String name, String pwd, String query);	
 
+
 }

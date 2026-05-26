@@ -133,9 +133,14 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 		System.out.println("Enters the delete");
 
 		return getUser(name, pwd )
-			.then(() -> DB.getOne(mid, Message.class))
+			.then(() -> getCachedMessage(mid))
 			.thenWith(msg -> name.equals( getName(msg.senderAddress())) ? ok(msg) : error(FORBIDDEN) )
 			.thenWith((msg) -> doAsyncDelete(msg));
+	}
+
+	
+	public Result<Message> getOneMessageDB(String mid){
+		return DB.getOne(mid, Message.class);
 	}
 	
 	
@@ -238,14 +243,14 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 		return deleteFromLocalInbox(mid);
 	}
 	
-	protected Result<Message> getCachedMessage(String mid) {
+    protected Result<Message> getCachedMessage(String mid) {
 
 		var msg = messagesCache.getIfPresent(mid);
 
 		if (msg != null)
 			return ok(msg);
 
-		return DB.getOne(mid, Message.class);
+		return getOneMessageDB(mid);
 	}
 	
 	public final class JobDispatcher {

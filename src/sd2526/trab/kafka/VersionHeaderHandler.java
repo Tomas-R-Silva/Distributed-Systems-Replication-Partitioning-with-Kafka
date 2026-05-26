@@ -1,37 +1,37 @@
-package sd2526.trab.kafka;
+	package sd2526.trab.kafka;
 
 
-import java.io.IOException;
+	import java.io.IOException;
 
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.container.ContainerResponseContext;
-import jakarta.ws.rs.container.ContainerResponseFilter;
-import jakarta.ws.rs.container.ContainerRequestFilter;
-import jakarta.ws.rs.ext.Provider;
-import sd2526.trab.api.rest.RestMessagesKafka;
-import sd2526.trab.impl.utils.SyncPoint;
-
-
+	import jakarta.ws.rs.container.ContainerRequestContext;
+	import jakarta.ws.rs.container.ContainerResponseContext;
+	import jakarta.ws.rs.container.ContainerResponseFilter;
+	import jakarta.ws.rs.container.ContainerRequestFilter;
+	import jakarta.ws.rs.ext.Provider;
+	import sd2526.trab.api.rest.RestMessagesKafka;
+	import sd2526.trab.impl.utils.SyncPoint;
 
 
-@Provider
-public class VersionHeaderHandler implements ContainerResponseFilter, ContainerRequestFilter{
-	
-	@Override
-	public void filter(ContainerRequestContext reqCtx) throws IOException {
-		String value = reqCtx.getHeaderString(RestMessagesKafka.HEADER_VERSION);
-			if( value != null && ! value.isEmpty()) {
-				version.set( Long.valueOf( value ) );
+
+
+	@Provider
+	public class VersionHeaderHandler implements ContainerResponseFilter, ContainerRequestFilter{
+		
+		@Override
+		public void filter(ContainerRequestContext reqCtx) throws IOException {
+			String value = reqCtx.getHeaderString(RestMessagesKafka.HEADER_VERSION);
+				if( value != null && ! value.isEmpty()) {
+					version.set( Long.valueOf( value ) );
+				}
+			}
+
+		@Override
+		public void filter(ContainerRequestContext reqCtx, ContainerResponseContext resCtx) throws IOException {
+			var value = SyncPoint.getSyncPoint().getVersion();
+			if( value != -1L ) {
+				resCtx.getHeaders().add(RestMessagesKafka.HEADER_VERSION, Long.toString( value ));
 			}
 		}
-
-	@Override
-	public void filter(ContainerRequestContext reqCtx, ContainerResponseContext resCtx) throws IOException {
-		var value = SyncPoint.getSyncPoint().getVersion();
-		if( value != -1L ) {
-			resCtx.getHeaders().add(RestMessagesKafka.HEADER_VERSION, Long.toString( value ));
-		}
+			
+		public static final ThreadLocal<Long> version = new ThreadLocal<>();
 	}
-		
-	public static final ThreadLocal<Long> version = new ThreadLocal<>();
-}
