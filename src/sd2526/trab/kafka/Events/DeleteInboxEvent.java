@@ -6,7 +6,9 @@ public class DeleteInboxEvent extends Event {
     private String pwd;
 
 
-    public DeleteInboxEvent(){}
+    public DeleteInboxEvent(){
+        super("REMOVE_INBOX");
+    }
 
 
     public String getName() {

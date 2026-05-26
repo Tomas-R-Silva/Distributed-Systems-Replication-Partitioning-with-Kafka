@@ -5,6 +5,7 @@ public class DeleteMessageEvent extends Event {
     private String mid;
 
     public DeleteMessageEvent() {
+        super("DELETE_MESSAGE");
     }
 
     public String getMid() {

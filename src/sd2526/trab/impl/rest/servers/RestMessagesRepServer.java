@@ -6,7 +6,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import java.util.concurrent.atomic.AtomicLong;
 
 import sd2526.trab.api.java.Messages;
-import sd2526.trab.impl.java.servers.JavaMessagesKafka;
 import sd2526.trab.kafka.ReplicationManager;
 import sd2526.trab.kafka.VersionHeaderHandler;
 
@@ -22,7 +21,7 @@ public class RestMessagesRepServer extends AbstractRestServer{
 
     @Override
     void registerResources(ResourceConfig config) {
-        JavaMessagesKafka.getInstance();
+        ReplicationManager.getInstance();
         config.register(RestMessagesRepResource.class);
         config.register( VersionHeaderHandler.class);
     }

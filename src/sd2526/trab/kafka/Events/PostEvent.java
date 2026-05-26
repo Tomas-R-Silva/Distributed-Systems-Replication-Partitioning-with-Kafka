@@ -8,14 +8,25 @@ public class PostEvent extends Event {
     
     private Message msg;
     public List<String> localRecipients;
+    private String mid;
     //desitnatários remotos e locais, os que existem e não existem
     
 
-    public PostEvent(){}
+    public PostEvent(){
+        super("POST");
+    }
 
 
     public Message getMsg() {
         return msg;
+    }
+
+    public String getMid(){
+        return mid;
+    }
+
+    public void setMid(String mid){
+        this.mid=mid;
     }
 
     public void setMsg(Message msg) {
@@ -24,7 +35,7 @@ public class PostEvent extends Event {
 
     
     public List<String> getLocalRecipients() {
-        return localRecipients;
+        return localRecipients != null ? localRecipients : List.of();
     }
 
     public void setLocalRecipients(List<String> localRecipients) {

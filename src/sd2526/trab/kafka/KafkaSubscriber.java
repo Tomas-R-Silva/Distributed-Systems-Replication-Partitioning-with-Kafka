@@ -39,7 +39,7 @@ public class KafkaSubscriber {
 		return new KafkaSubscriber( new KafkaConsumer<String, String>(props), topics);
 	}
 
-	private static final long POLL_TIMEOUT = 1L;
+	private static final long POLL_TIMEOUT = 10L;
 
 	final KafkaConsumer<String, String> consumer;
 
