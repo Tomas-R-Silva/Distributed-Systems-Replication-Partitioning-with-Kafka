@@ -130,10 +130,10 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 	@Override
 	public Result<Void> deleteMessage(String name, String mid, String pwd) {
 		Log.info( () -> "deleteMessage : name = %s, mid = %s, pwd = %s\n".formatted(name, mid, pwd));
-
+		System.out.println("Enters the delete");
 
 		return getUser(name, pwd )
-			.then( () -> getCachedMessage(mid))
+			.then(() -> DB.getOne(mid, Message.class))
 			.thenWith(msg -> name.equals( getName(msg.senderAddress())) ? ok(msg) : error(FORBIDDEN) )
 			.thenWith((msg) -> doAsyncDelete(msg));
 	}
@@ -238,9 +238,14 @@ public class JavaMessages extends JavaBaseService implements Messages, AdminMess
 		return deleteFromLocalInbox(mid);
 	}
 	
-	protected Result<Message> getCachedMessage( String mid ) {
-		var msg = messagesCache.getIfPresent( mid );
-		return msg != null ? ok( msg ) : error( FORBIDDEN );
+	protected Result<Message> getCachedMessage(String mid) {
+
+		var msg = messagesCache.getIfPresent(mid);
+
+		if (msg != null)
+			return ok(msg);
+
+		return DB.getOne(mid, Message.class);
 	}
 	
 	public final class JobDispatcher {

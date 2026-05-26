@@ -39,11 +39,13 @@ public class ReplicationManager extends JavaMessages{
     private KafkaPublisher publisher;
     private KafkaSubscriber subscriber;
 
-    private final Gson gson;
-
+    private final Gson gson;        
     SyncPoint syncPoint;
 
     private boolean kafkaEnabled = false;
+    private static final String REPLICA_ID = IP.hostname();
+    private static final String TOPIC = IP.domain();  
+
 
     static final AtomicLong counter = new AtomicLong(0L);
 
@@ -61,9 +63,9 @@ public class ReplicationManager extends JavaMessages{
     }
 
     private void initKafka() {
-        KafkaUtils.createTopic(IP.domain());
+        KafkaUtils.createTopic(TOPIC);
         this.publisher = KafkaPublisher.createPublisher("kafka:9092");
-        this.subscriber = KafkaSubscriber.createSubscriber("kafka:9092",List.of(IP.domain()));
+        this.subscriber = KafkaSubscriber.createSubscriber("kafka:9092",List.of(TOPIC));
     }
 
     public void start() {
@@ -89,15 +91,12 @@ public class ReplicationManager extends JavaMessages{
                             syncPoint.setResult(offset, res.isOK() ? msg.getId() : null); //says that have written in the DB
                         }
 
-                        case "REMOVE_INBOX" -> {
-                            DeleteInboxEvent e = gson.fromJson(r.value(), DeleteInboxEvent.class);
-                            getUser(e.getName(), e.getPwd() )
-                                .then( () -> DB.deleteOne( new InboxEntry(e.getMid(), e.getName()) ) ).mapToVoid()
-                                .then( () -> {
-                                    gcDeletedMessageCache.put( e.getMid(), e.getMid() );
-                                });
-                            syncPoint.setResult(offset, "");
-                        }
+                            case "REMOVE_INBOX" -> {
+                                DeleteInboxEvent e = gson.fromJson(r.value(), DeleteInboxEvent.class);
+                                getUser(e.getName(), e.getPwd() )
+                                    .then( () -> DB.deleteOne( new InboxEntry(e.getMid(), e.getName()) ) ).mapToVoid();
+                                syncPoint.setResult(offset, "");
+                            }
 
                         case "DELETE_MESSAGE" -> {
                             DeleteMessageEvent e = gson.fromJson(r.value(), DeleteMessageEvent.class);
@@ -128,7 +127,7 @@ public class ReplicationManager extends JavaMessages{
 
 		return getCachedMessage(msg.originId()).mapValue(Message::getId).orElse(() -> {
 			
-			msg.setId("%s+%04d".formatted(THIS_DOMAIN, counter.incrementAndGet()));
+			msg.setId("%s@%s+%04d".formatted(REPLICA_ID, THIS_DOMAIN, counter.incrementAndGet()));
 			
 			messagesCache.put(msg.originId(), new Message( msg )); // For ensuring idempotency...
 			
@@ -149,6 +148,7 @@ public class ReplicationManager extends JavaMessages{
                 event.setMsg(msg);
                 event.setLocalRecipients(localAdresses);
                 event.setMid(msg.getId());
+                event.setOriginReplica(REPLICA_ID);
                 long offset = publisher.publish(IP.domain(), JSON.encode(event));
                 syncPoint.waitForResult(offset); // wait until subscriber has written to DB
             }
@@ -190,7 +190,7 @@ public class ReplicationManager extends JavaMessages{
                 .map(r -> r.split("@")[1])
                 .collect(Collectors.toSet());
 
-        for (var domain : domains) {
+        for (var domain : domains) {    
             if (domain.equals(IP.domain())) {
                 // delete in all replicas
                 long offset = publisher.publish(IP.domain(), JSON.encode(event));
@@ -204,6 +204,7 @@ public class ReplicationManager extends JavaMessages{
         }
         return Result.ok();
     }
+    
 
     @Override
 	public Result<Void> remoteDeleteMessage(String mid) {
@@ -215,6 +216,7 @@ public class ReplicationManager extends JavaMessages{
 
         DeleteMessageEvent event = new DeleteMessageEvent();
         event.setMid(mid);
+        event.setOriginReplica(REPLICA_ID);
 		long offset = publisher.publish(IP.domain(), JSON.encode(event));
 		syncPoint.waitForResult(offset);
         return Result.ok();
@@ -230,6 +232,7 @@ public class ReplicationManager extends JavaMessages{
         var localAddresses = getLocalRecipientAddresses(msg);
         PostEvent event = new PostEvent();
         event.setMsg(msg);
+        event.setOriginReplica(REPLICA_ID);
         event.setLocalRecipients(localAddresses);
         long offset = publisher.publish(IP.domain(), JSON.encode(event));
         syncPoint.waitForResult(offset);
@@ -248,6 +251,7 @@ public class ReplicationManager extends JavaMessages{
             event.setName(name);
             event.setMid(mid);
             event.setPwd(pwd);
+            event.setOriginReplica(REPLICA_ID);
             long offset = publisher.publish(IP.domain(), JSON.encode(event));
             syncPoint.waitForResult(offset);
             return Result.ok();
