@@ -1,5 +1,3 @@
-# README
-
-This project includes a solution for project 1 of Distributed Systems NOVA
-FCT, 2025/26. This code can be used as the basis for solving the second
-project, but students can use their own version.
+# Distributed-Systems-Replication-Partitioning-with-Kafka
+Implementation of replication and partitioning mechanisms in a distributed system, using Apache Kafka for coordination and message-based communication.
+>>>>>>> 6a2a8e6c84abc86c01e726abf4daa96932de4ffa
